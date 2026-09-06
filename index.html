@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="picture/warframe-logo.svg">
+<title>EELOG Generator - 仲裁模拟日志生成器</title>
+<script src="vendor/gsap.min.js"></script>
+<script src="vendor/ScrollTrigger.min.js"></script>
+<style>
+/* Hallmark · pre-emit critique: P4 H4 E4 S4 R4 V4 */
+:root{
+  --bg:#ebe8f1; --bg2:#e2deec; --panel:#f6f4fb; --card:#ffffff;
+  --ink:#322f44; --muted:rgba(50,47,68,.62); --faint:rgba(60,55,90,.10);
+  --line:rgba(60,55,90,.20); --sky:#0ea5e9; --sky-ink:#0284c7; --sky-soft:rgba(14,165,233,.10);
+  --green:#16a34a; --green-soft:rgba(22,163,74,.08); --err:#b91c1c;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;overflow-x:clip}
+body{background:var(--bg);color:var(--ink);font-family:GeistSans,"PingFang SC","Microsoft YaHei UI","Microsoft YaHei",system-ui,sans-serif;overflow-x:clip;min-height:100vh}
+::selection{background:rgba(14,165,233,.25)}
+.grid-overlay{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:repeating-linear-gradient(90deg,rgba(60,55,90,.045) 0 1px,transparent 1px 46px),
+              repeating-linear-gradient(0deg,rgba(60,55,90,.045) 0 1px,transparent 1px 46px);
+  mask-image:radial-gradient(circle at 50% 20%,#000 18%,transparent 78%);opacity:.55}
+
+/* App shell */
+nav{position:sticky;top:0;left:0;right:0;z-index:20;display:flex;justify-content:space-between;align-items:center;
+  padding:14px max(20px,calc((100vw - 1060px)/2));background:rgba(235,232,241,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+nav .logo{font-weight:750;letter-spacing:.02em;color:var(--ink);font-size:14px}
+nav .meta{font-size:12px;color:var(--muted)}
+
+/* First-screen workbench lead */
+header{position:relative;z-index:2;max-width:1060px;margin:0 auto;padding:68px 22px 20px;min-height:0;text-align:left}
+.kicker{display:inline-flex;align-items:center;gap:8px;color:var(--sky-ink);font-size:12px;font-weight:700;margin:0 0 12px}
+.kicker::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--sky)}
+h1.mega{font-size:30px;font-weight:780;line-height:1.2;letter-spacing:-.02em;color:var(--ink);text-wrap:balance;overflow-wrap:anywhere;min-width:0}
+h1.mega .ch{display:inline-block;color:var(--ink)!important}
+.sub{max-width:60ch;margin-top:10px;color:var(--muted);letter-spacing:0;font-size:14px;line-height:1.8;text-wrap:pretty}
+.chips{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap;justify-content:flex-start}
+.chip{font-size:11px;letter-spacing:0;color:var(--ink);border:1px solid var(--line);padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.65)}
+.scrolldown{display:none}
+.marquee{display:none}
+
+/* sections */
+section{position:relative;z-index:2;max-width:1060px;margin:0 auto;padding:38px 22px 24px}
+.secnum{display:none}
+h2{font-size:clamp(1.3rem,3.5vw,1.8rem);font-weight:800;letter-spacing:.04em;margin:8px 0 6px;color:var(--ink)}
+h2 .hl{color:var(--sky-ink)}
+.desc{color:var(--muted);font-size:13px;letter-spacing:.03em;margin-bottom:22px;line-height:1.9}
+
+/* mode cards */
+.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:760px){.modes{grid-template-columns:1fr}}
+.mode{position:relative;border:1px solid var(--line);border-radius:12px;padding:20px 18px;cursor:pointer;
+  background:var(--card);overflow:hidden;transition:border-color .2s,box-shadow .2s,transform .2s;min-height:180px}
+.mode:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(60,55,90,.10)}
+.mode.on,.mode:focus-visible{border-color:var(--sky);box-shadow:0 0 0 3px rgba(14,165,233,.18),0 8px 24px rgba(14,165,233,.12);outline:0}
+.mode .glow{display:none}
+.mode h3{font-size:17px;letter-spacing:.1em;margin-bottom:4px;color:var(--ink)}
+.mode .en{font-family:Consolas,monospace;font-size:10px;color:var(--muted);letter-spacing:.15em}
+.mode .rule{margin-top:12px;font-size:12px;color:var(--muted);line-height:1.9}
+.mode .tick{position:absolute;top:12px;right:14px;font-family:Consolas,monospace;color:var(--sky-ink);font-size:13px;font-weight:700;opacity:0}
+.mode.on .tick{opacity:1}
+
+/* form */
+.panel{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:24px 22px}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:760px){.fgrid{grid-template-columns:1fr}}
+.field label{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;letter-spacing:.06em;color:var(--ink);margin-bottom:8px}
+.q{width:17px;height:17px;border:1px solid var(--line);border-radius:50%;font-size:10px;display:inline-flex;
+  align-items:center;justify-content:center;color:var(--sky-ink);cursor:help;font-family:Consolas,monospace;background:#fff}
+.field input[type=text],.field input[type=number],.field select{width:100%;background:#fff;
+  border:1px solid rgba(60,55,90,.22);border-radius:8px;color:var(--ink);padding:11px 12px;font-size:14px;outline:none;
+  transition:border-color .2s,box-shadow .2s;font-family:inherit}
+.field input:focus,.field select:focus{border-color:var(--sky);box-shadow:0 0 0 3px rgba(14,165,233,.15)}
+.field input.invalid{border-color:var(--err);box-shadow:0 0 0 3px rgba(185,28,28,.12)}
+.field select option{background:#fff}
+.squad{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:520px){.squad{grid-template-columns:1fr}}
+.unitrow{display:flex;gap:8px;margin-top:8px}
+.unit{flex:1;text-align:center;border:1px solid var(--line);border-radius:999px;padding:9px;cursor:pointer;
+  font-size:12px;color:var(--muted);transition:all .2s;background:#fff}
+.unit.on{border-color:var(--sky);color:var(--sky-ink);background:var(--sky-soft)}
+.hintline{font-size:11px;color:var(--muted);margin-top:6px;letter-spacing:.02em;line-height:1.8}
+
+/* preview */
+#preview{margin-top:18px;border:1px dashed rgba(14,165,233,.5);border-radius:12px;padding:18px;background:rgba(14,165,233,.05)}
+#preview h4{letter-spacing:.2em;font-size:12px;color:var(--sky-ink);margin-bottom:12px;font-weight:700}
+.pvgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:760px){.pvgrid{grid-template-columns:1fr 1fr}}
+.pv{background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px;text-align:center}
+.pv .k{font-size:11px;color:var(--muted);letter-spacing:.06em;margin-bottom:4px}
+.pv .v{font-family:Consolas,monospace;font-size:18px;color:var(--ink);font-weight:700}
+.pv .v.cy{color:var(--sky-ink)}
+.pv .v.gd{color:#b45309}
+
+/* buttons */
+.btnrow{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+button{font-family:inherit;cursor:pointer}
+.btn{position:relative;flex:1;min-width:200px;padding:13px 18px;border-radius:999px;border:1px solid rgba(60,55,90,.3);
+  background:#fff;color:var(--ink);
+  font-size:14px;font-weight:700;letter-spacing:.04em;overflow:hidden;transition:box-shadow .2s,transform .15s}
+.btn small{display:block;font-size:10px;font-weight:400;letter-spacing:.08em;color:var(--muted);margin-top:3px}
+.btn:hover{box-shadow:0 6px 20px rgba(60,55,90,.15)}
+.btn.ghost{color:var(--sky-ink);background:#fff}
+.btn.ghost:hover{border-color:var(--sky);box-shadow:0 6px 20px rgba(14,165,233,.16)}
+.btn.primary{border-color:var(--sky-ink);background:var(--sky-ink);color:#fff}
+.btn.primary small{color:rgba(255,255,255,.78)}
+.btn.primary:hover{box-shadow:0 6px 20px rgba(2,132,199,.28)}
+.btn:disabled{opacity:.45;cursor:wait}
+#progress{height:4px;border-radius:2px;background:rgba(60,55,90,.12);margin-top:14px;overflow:hidden;display:none}
+#progress span{display:block;height:100%;width:0;background:var(--sky)}
+#progressText,.field-error{font-size:12px;line-height:1.6;margin-top:6px;color:var(--muted)}
+.field-error{color:var(--err);min-height:0}
+#result{margin-top:14px;font-family:Consolas,monospace;font-size:12px;color:var(--ink);line-height:2;display:none;
+  border:1px solid rgba(22,163,74,.35);border-radius:8px;padding:12px 14px;background:rgba(22,163,74,.06);white-space:pre-wrap}
+
+/* how */
+.steps{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:10px}
+@media(max-width:760px){.steps{grid-template-columns:1fr}}
+.step{border:1px solid var(--line);border-radius:10px;padding:18px;background:var(--card)}
+.step h5{margin:6px 0;font-size:14px;letter-spacing:.06em;color:var(--ink)}
+.step p{font-size:12px;color:var(--muted);line-height:2}
+code{font-family:Consolas,monospace;color:var(--sky-ink);font-size:11px;background:rgba(60,55,90,.06);padding:1px 5px;border-radius:4px}
+footer{position:relative;z-index:2;text-align:center;padding:44px 20px 36px;color:var(--muted);
+  font-size:11px;letter-spacing:.2em;border-top:1px solid var(--line);margin-top:56px}
+
+/* tooltip */
+#tip{position:fixed;z-index:200;max-width:290px;background:#fff;border:1px solid rgba(14,165,233,.5);
+  border-radius:10px;padding:12px 14px;font-size:12px;line-height:1.9;color:var(--ink);pointer-events:none;
+  opacity:0;transition:opacity .15s;box-shadow:0 10px 32px rgba(60,55,90,.18)}
+#tip.show{opacity:1}
+#tip b{color:var(--sky-ink)}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+  .grid-overlay{display:none}
+}
+@media (max-width:768px){
+  nav{padding:12px 16px}
+  nav .meta{font-size:11px;white-space:nowrap}
+  header{padding:48px 16px 18px}
+  h1.mega{font-size:26px}
+  section{padding:30px 16px 18px}
+  .pvgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .btn{min-width:0;width:100%;letter-spacing:.06em}
+  .btnrow{flex-direction:column}
+}
+</style>
+</head>
+<body>
+
+<div class="grid-overlay"></div>
+<div id="tip"></div>
+
+<nav><div class="logo">EELOG Generator</div><div class="meta">本地处理 · 不上传文件</div></nav>
+
+<header>
+  <div class="kicker" id="kicker">新建模拟任务</div>
+  <h1 class="mega" id="mega">按参数生成一份模拟任务记录</h1>
+  <div class="sub">选择模式、节点和队伍，再输入期望生息与任务进度。页面会按模式节奏安排生成、压力与结算事件。</div>
+  <div class="chips">
+    <div class="chip">防御 / 镜像防御 / 拦截</div>
+    <div class="chip">全 Buff 期望模型</div>
+    <div class="chip">结构化日志输出</div>
+    <div class="chip">纯离线 · 双击即用</div>
+  </div>
+</header>
+
+<section id="s1">
+  <h2 class="reveal">任务模式</h2>
+  <p class="desc reveal">模式决定关卡节奏、轮次结算与敌人压力曲线。悬浮卡片可查看具体说明。</p>
+  <div class="modes" role="radiogroup" aria-label="任务模式">
+      <div class="mode on" data-m="defense" role="radio" aria-checked="true" tabindex="0" data-tip="&lt;b&gt;防御&lt;/b&gt;：每轮包含 3 个防御波次。每波会写入独立的生成预算（总数、阶位、同屏上限和精英率），并以 DefenseReward::TransitionOut 作为轮次结算标记。单轮约 82 秒。">
+      <div class="glow"></div><div class="tick">[✓]</div>
+      <h3>防御</h3><div class="en">DEFENSE · MT_DEFENSE</div>
+        <div class="rule">按波输入 · 标准 81 波约 37 分钟<br>波次预算与逐怪生成行<br>适合较短的多波次任务</div>
+    </div>
+      <div class="mode" data-m="mirror" role="radio" aria-checked="false" tabindex="-1" data-tip="&lt;b&gt;镜像防御&lt;/b&gt;：按循环防御（LoopDefend）推进。每轮包含多个环波和连续结算事件，单轮约 503 秒。">
+      <div class="glow"></div><div class="tick">[✓]</div>
+      <h3>镜像防御</h3><div class="en">MIRROR · LOOP DEFENSE</div>
+        <div class="rule">循环波次推进 · 单轮约 503 秒<br>连续结算与环波播报<br>适合较长的连续任务</div>
+    </div>
+      <div class="mode" data-m="interception" role="radio" aria-checked="false" tabindex="-1" data-tip="&lt;b&gt;拦截&lt;/b&gt;：以领地争夺（TerritoryMission）为主线，交替写入点位易手、关键时间点和队伍重组事件。每轮一次结算，单轮约 414 秒。">
+      <div class="glow"></div><div class="tick">[✓]</div>
+      <h3>拦截</h3><div class="en">INTERCEPTION · MT_TERRITORY</div>
+        <div class="rule">领地争夺 · 单轮约 414 秒<br>点位易手与关键时间点<br>适合中等时长的稳定任务</div>
+    </div>
+  </div>
+</section>
+
+<section id="s2">
+  <h2 class="reveal">节点与队伍</h2>
+  <p class="desc reveal">节点列表使用内置参考值，切换模式后会自动筛选对应地图。
+  队伍最终固定为 4 人：留空的位置会自动填充 7–15 位随机英文名。</p>
+  <div class="panel reveal">
+    <div class="fgrid">
+      <div class="field">
+        <label>任务节点 <span class="q" data-tip="&lt;b&gt;任务节点&lt;/b&gt;：决定日志中的任务名、关卡资源路径、派系和参考生息。下拉列表只显示当前模式可用的地图，括号内为内置参考值（/时）。">?</span></label>
+        <select id="node"></select>
+        <div class="hintline" id="nodehint"></div>
+      </div>
+      <div class="field">
+        <label>队伍成员（4 槽位） <span class="q" data-tip="&lt;b&gt;队伍成员&lt;/b&gt;：第 1 个视为主机（Logged in）。留空的槽位在生成时用 7–15 位随机英文字符填充。最终日志内固定出现 4 名队员，含组队 / 实体创建 / 结算行。">?</span></label>
+        <div class="squad">
+          <input type="text" id="p0" maxlength="24" placeholder="队员 1（主机）">
+          <input type="text" id="p1" maxlength="24" placeholder="队员 2（留空随机）">
+          <input type="text" id="p2" maxlength="24" placeholder="队员 3（留空随机）">
+          <input type="text" id="p3" maxlength="24" placeholder="队员 4（留空随机）">
+        </div>
+        <div class="hintline">允许填 1–4 个名字；中文 / 英文 / 数字均可，特殊字符会被自动清洗。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="s3">
+  <h2 class="reveal">目标与生成</h2>
+  <p class="desc reveal">填写目标参数后，页面会计算所需的无人机数、有效敌人、Spawned 峰值和总时长，
+  再生成时间戳递增、计数连续的模拟日志。</p>
+  <div class="panel reveal">
+    <div class="fgrid">
+      <div class="field">
+        <label>期望生息 <span class="q" data-tip="&lt;b&gt;期望生息&lt;/b&gt;：按全 Buff 口径计算，包含掉落加成和轮次保底、红利。选择“/小时”或“/分钟”后，页面会据此估算所需无人机数。超出当前模式范围的数值会受上限限制，预览会显示实际计算结果。">?</span></label>
+        <input type="number" id="ess" min="1" max="100000" step="any" placeholder="例如 750" aria-describedby="essError">
+        <div class="field-error" id="essError" aria-live="polite"></div>
+        <div class="unitrow">
+          <div class="unit on" data-u="h">期望生息 / 小时</div>
+          <div class="unit" data-u="m">期望生息 / 分钟</div>
+        </div>
+      </div>
+      <div class="field">
+        <label><span id="roundLabel">波数（标准 81 波）</span> <span class="q" data-tip="&lt;b&gt;轮 / 波次&lt;/b&gt;：防御按波输入（标准 81 波，自动按 3 波一轮换算，非 3 的倍数会就近取整）；拦截 / 镜像防御按轮输入（标准 10 / 9 轮）。范围：防御 3–90 波，拦截/镜像 1–12 轮。">?</span></label>
+        <input type="number" id="rounds" min="1" max="90" step="1" value="81">
+        <div class="hintline" id="roundhint">防御：81 波 = 27 轮</div>
+      </div>
+      <div class="field">
+        <label>任务总时长 <span class="q" data-tip="&lt;b&gt;任务总时长&lt;/b&gt;：主机时长（SS_STARTED → 末次结算）。留空则按模式节拍自动估算（防御 82s/轮、拦截 414s/轮、镜像 503s/轮，带 ±8% 抖动）；也可手动输入，例如 37:45、1h7m50s、2264。输入会直接决定日志时间跨度和对应的生息反解。">?</span></label>
+        <input type="text" id="dur" placeholder="留空自动估算，或填如 37:45 / 1h7m50s / 2264" aria-describedby="durhint durError">
+        <div class="hintline" id="durhint">留空自动估算；手动输入会锁定预览与生成文件的总时长</div>
+        <div class="field-error" id="durError" aria-live="polite"></div>
+      </div>
+      <div class="field">
+        <label>清场效率 % <span class="q" data-tip="&lt;b&gt;清场效率&lt;/b&gt;：无人机出现率相对理论 20% 的达成率。留空时会按当前参数自动计算，结果位于 75%-95% 之间。页面据此估算所需有效敌人数。">?</span></label>
+        <input type="number" id="clear" min="1" max="400" step="any" placeholder="留空 = 自动计算（75–95）">
+      </div>
+      <div class="field">
+        <label>文件 <span class="q" data-tip="&lt;b&gt;输出文件&lt;/b&gt;：文件固定命名为 EE.log，包含启动、队伍、任务和收尾记录。内容为本工具生成的模拟数据，适合用于查看结构和离线测试。">?</span></label>
+        <div class="hintline">输出固定命名：<code>EE.log</code><br>含完整启动头 + 大厅 + <span id="fhint">N 轮</span>任务体 + 收尾，行数随轮次增长。</div>
+      </div>
+    </div>
+    <div id="preview">
+      <h4>◇ 参数推算预览 ◇</h4>
+      <div class="pvgrid">
+        <div class="pv"><div class="k">节点基准 /时</div><div class="v cy" id="pvBase">待计算</div></div>
+        <div class="pv"><div class="k">任务总时长</div><div class="v cy" id="pvDur">待计算</div></div>
+        <div class="pv"><div class="k">无人机总数</div><div class="v" id="pvDrones">待计算</div></div>
+        <div class="pv"><div class="k">敌人生成 / 有效敌人</div><div class="v" id="pvValid">待计算</div></div>
+        <div class="pv"><div class="k">全BUFF /时</div><div class="v gd" id="pvEPH">待计算</div></div>
+        <div class="pv"><div class="k">全BUFF /分</div><div class="v gd" id="pvEPM">待计算</div></div>
+        <div class="pv"><div class="k">清场效率</div><div class="v" id="pvClear">待计算</div></div>
+        <div class="pv"><div class="k">生息效率</div><div class="v cy" id="pvEff">待计算</div></div>
+      </div>
+    </div>
+    <div class="btnrow">
+      <button class="btn ghost" id="btnPreview">更新预览<small>只计算，不下载</small></button>
+      <button class="btn primary" id="btnGen">生成并下载 EE.log<small>计算参数并生成日志</small></button>
+    </div>
+    <div id="progress" role="progressbar" aria-label="日志生成进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+    <div id="progressText" aria-live="polite"></div>
+    <div id="result" role="status" aria-live="polite"></div>
+  </div>
+</section>
+
+<section id="s4">
+  <h2 class="reveal">计算口径</h2>
+  <div class="steps">
+    <div class="step reveal"><h5>轮次与时长</h5><p>每轮以 <code>DefenseReward::TransitionOut</code> 记录结算；任务时长从 <code>SS_STARTED</code> 记至最后一次结算。输入的轮次决定结算次数，时长按模式节拍安排：防御 82 秒、拦截 414 秒、镜像 503 秒。</p></div>
+    <div class="step reveal"><h5>按生息估算无人机</h5><p>全 Buff 生息按 <code>无人机×0.06×5.9 + 轮次保底与红利</code> 计算。前 4 轮每轮加 0.21，之后每轮加 0.30；页面会结合期望值、轮次和时长估算无人机数，并分配到各轮。</p></div>
+    <div class="step reveal"><h5>按清场估算敌人</h5><p>清场效率按 <code>无人机/(有效敌人−无人机)/0.2×100</code> 计算。页面据此估算有效敌人总数，再按波次预算写入 <code>OnAgentCreated</code> 行，<code>Spawned</code> 计数持续递增。</p></div>
+    <div class="step reveal"><h5>日志结构</h5><p>生成文件包含启动、关卡加载、队伍、任务和收尾记录；字段和事件顺序在同一份文件内保持一致。</p></div>
+  </div>
+</section>
+
+  <footer>EELOG Generator · 用于模拟数据学习与离线调试</footer>
+
+<script>
+"use strict";
+/* ============ 内置节点基准（防御 / 镜像防御 / 拦截） ============ */
+var NODES=[
+{id:"ClanNode22",name:"Seimeni",planet:"谷神星",type:"defense",typeZh:"防御",faction:"Infested",perHour:779.1},
+{id:"SolNode164",name:"Kala-azar",planet:"阋神星",type:"defense",typeZh:"防御",faction:"Infested",perHour:752.3},
+{id:"ClanNode24",name:"Sechura",planet:"冥王星",type:"defense",typeZh:"防御",faction:"Infested",perHour:736.5},
+{id:"SolNode149",name:"Casta",planet:"谷神星",type:"defense",typeZh:"防御",faction:"Grineer",perHour:734.6},
+{id:"ClanNode4",name:"Sinai",planet:"木星",type:"defense",typeZh:"防御",faction:"Infested",perHour:725.7},
+{id:"ClanNode18",name:"Akkad",planet:"阋神星",type:"defense",typeZh:"防御",faction:"Infested",perHour:721.5},
+{id:"ClanNode2",name:"Coba",planet:"地球",type:"defense",typeZh:"防御",faction:"Infested",perHour:720.1},
+{id:"ClanNode6",name:"Larzac",planet:"欧罗巴",type:"defense",typeZh:"防御",faction:"Infested",perHour:712.8},
+{id:"ClanNode8",name:"Kadesh",planet:"火星",type:"defense",typeZh:"防御",faction:"Infested",perHour:711.2},
+{id:"SolNode195",name:"Hydron",planet:"赛德娜",type:"defense",typeZh:"防御",faction:"Grineer",perHour:706.5},
+{id:"SolNode707",name:"Hyf",planet:"火卫二",type:"defense",typeZh:"防御",faction:"Infested",perHour:700.6},
+{id:"SolNode408",name:"Belenus",planet:"虚空",type:"defense",typeZh:"防御",faction:"Orokin",perHour:685.8},
+{id:"SolNode42",name:"Helene",planet:"土星",type:"defense",typeZh:"防御",faction:"Grineer",perHour:685.7},
+{id:"SolNode46",name:"Spear",planet:"火星",type:"defense",typeZh:"防御",faction:"Grineer",perHour:676.2},
+{id:"SolNode122",name:"Stephano",planet:"天王星",type:"defense",typeZh:"防御",faction:"Grineer",perHour:640.3},
+{id:"SolNode402",name:"Taranis",planet:"虚空",type:"defense",typeZh:"防御",faction:"Orokin",perHour:639.1},
+{id:"SolNode125",name:"Io",planet:"木星",type:"defense",typeZh:"防御",faction:"Corpus",perHour:622.9},
+{id:"SolNode212",name:"Paimon",planet:"欧罗巴",type:"defense",typeZh:"防御",faction:"Corpus",perHour:613.2},
+{id:"SolNode72",name:"Outer Terminus",planet:"冥王星",type:"defense",typeZh:"防御",faction:"Corpus",perHour:602.2},
+{id:"SolNode22",name:"Tessera",planet:"金星",type:"defense",typeZh:"防御",faction:"Corpus",perHour:595.4},
+{id:"ClanNode0",name:"Romula",planet:"金星",type:"defense",typeZh:"防御",faction:"Infested",perHour:581.8},
+{id:"SolNode305",name:"Stofler",planet:"月球",type:"defense",typeZh:"防御",faction:"Grineer",perHour:525.0},
+{id:"SolNode26",name:"Lith",planet:"地球",type:"defense",typeZh:"防御",faction:"Grineer",perHour:514.3},
+{id:"SettlementNode11",name:"Gulliver",planet:"火卫一",type:"defense",typeZh:"防御",faction:"Corpus",perHour:505.4},
+{id:"SolNode130",name:"Lares",planet:"水星",type:"defense",typeZh:"防御",faction:"Grineer",perHour:497.8},
+{id:"ClanNode15",name:"Sangeru",planet:"赛德娜",type:"defense",typeZh:"防御",faction:"Infested",perHour:488.1},
+{id:"SolNode17",name:"Proteus",planet:"海王星",type:"defense",typeZh:"防御",faction:"Corpus",perHour:460.0},
+{id:"SolNode450",name:"Tyana Pass",planet:"火星",type:"mirror",typeZh:"镜像防御",faction:"Crossfire",perHour:1159.9},
+{id:"SolNode719",name:"Munio",planet:"火卫二",type:"mirror",typeZh:"镜像防御",faction:"The Murmur",perHour:1051.6},
+{id:"SolNode25",name:"Callisto",planet:"木星",type:"interception",typeZh:"拦截",faction:"Corpus",perHour:1010.6},
+{id:"SolNode23",name:"Cytherean",planet:"金星",type:"interception",typeZh:"拦截",faction:"Corpus",perHour:995.4},
+{id:"SolNode64",name:"Umbriel",planet:"天王星",type:"interception",typeZh:"拦截",faction:"Grineer",perHour:942.0},
+{id:"SolNode106",name:"Alator",planet:"火星",type:"interception",typeZh:"拦截",faction:"Grineer",perHour:939.9},
+{id:"SolNode172",name:"Xini",planet:"阋神星",type:"interception",typeZh:"拦截",faction:"Infested",perHour:926.2},
+{id:"SolNode147",name:"Cinxia",planet:"谷神星",type:"interception",typeZh:"拦截",faction:"Grineer",perHour:872.6},
+{id:"SolNode224",name:"Odin",planet:"水星",type:"interception",typeZh:"拦截",faction:"Grineer",perHour:769.0},
+{id:"SolNode211",name:"Ose",planet:"欧罗巴",type:"interception",typeZh:"拦截",faction:"Corpus",perHour:725.3},
+{id:"SolNode412",name:"Mithra",planet:"虚空",type:"interception",typeZh:"拦截",faction:"Orokin",perHour:663.0},
+{id:"SolNode43",name:"Cerberus",planet:"冥王星",type:"interception",typeZh:"拦截",faction:"Corpus",perHour:446.1},
+{id:"SolNode85",name:"Gaia",planet:"地球",type:"interception",typeZh:"拦截",faction:"Grineer",perHour:391.5},
+{id:"SolNode18",name:"Rhea",planet:"土星",type:"interception",typeZh:"拦截",faction:"Grineer",perHour:348.5},
+{id:"SolNode185",name:"Berehynia",planet:"赛德娜",type:"interception",typeZh:"拦截",faction:"Grineer",perHour:295.4}
+];
+var MODE_CFG={
+  defense:{roundSec:82,wavesPerRound:3,mt:"MT_DEFENSE",cap:14,maxRounds:30,stdRounds:27},
+  mirror:{roundSec:503,wavesPerRound:2,mt:"MT_DEFENSE",cap:34,maxRounds:12,stdRounds:9},
+  interception:{roundSec:414,wavesPerRound:1,mt:"MT_TERRITORY",cap:32,maxRounds:12,stdRounds:10}
+};
+var BASE_DROP=0.06, FULL_BUFF_MUL=5.9;
+function extraVitus(n){n=Math.max(0,Math.floor(n));return 0.07*Math.min(n,4)*3+0.10*Math.max(0,n-4)*3;}
+function expectedRounds(n){return Math.floor(n)+extraVitus(n);}
+
+/* ============ 随机工具（种子随机，保证每次文件指纹不同） ============ */
+var _s=(Date.now()%2147483646)+1;
+function rnd(){_s=(_s*16807)%2147483647;return (_s-1)/2147483646;}
+function ri(a,b){return Math.floor(rnd()*(b-a+1))+a;}
+function rf(a,b){return a+rnd()*(b-a);}
+function pick(a){return a[Math.floor(rnd()*a.length)];}
+function hex(n){var s="";for(var i=0;i<n;i++)s+="0123456789ABCDEF"[ri(0,15)];return s;}
+function randName(){var l=ri(7,15),s="",ch="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";for(var i=0;i<l;i++)s+=ch[ri(0,ch.length-1)];return s;}
+function cleanName(s){s=String(s||"").replace(/[^\w\-. #|\u4e00-\u9fa5\u3040-\u30ffa-zA-Z0-9\u3000-\u303F\uFF00-\uFFEF\u2010-\u2015·!~*?]/g,"").trim();return s||randName();}
+function fmtT(t){return t.toFixed(3);}
+var ICON="\uE000"; /* 客户端玩家名后的平台图标占位符（真实日志同样携带） */
+
+/* ============ 表单状态 ============ */
+var state={mode:"defense",unit:"h"};
+var $=function(id){return document.getElementById(id);};
+
+function modeNodes(){return NODES.filter(function(n){return n.type===state.mode;});}
+function refreshNodes(){
+  var sel=$("node");sel.innerHTML="";
+  modeNodes().forEach(function(n){
+    var o=document.createElement("option");o.value=n.id;
+    o.text=n.name+" · "+n.planet+" · 基准 "+n.perHour+"/时";
+    sel.appendChild(o);
+  });
+  if(state.mode==="defense"){sel.value="SolNode149";}
+  else if(state.mode==="mirror"){sel.value="SolNode450";}
+  else{sel.value="SolNode147";}
+  updateNodeHint();
+}
+function parseDuration(str){
+  str=String(str||"").trim().toLowerCase();
+  if(!str) return null;
+  if(str.indexOf(":")!==-1){
+    var parts=str.split(":").map(function(x){return parseInt(x,10);});
+    if(parts.some(function(v){return isNaN(v);} )) return null;
+    if(parts.length===2) return parts[0]*60+parts[1];
+    if(parts.length===3) return parts[0]*3600+parts[1]*60+parts[2];
+    return parts[0];
+  }
+  var h=0,m=0,sec=0,found=false;
+  var re=/(\d+(?:\.\d+)?)\s*(h|hour|小时|m|min|分|s|sec|秒)/g, mat;
+  while((mat=re.exec(str))!==null){
+    found=true; var v=parseFloat(mat[1]), u=mat[2];
+    if(u[0]==="h"||u.indexOf("小时")!==-1) h+=v;
+    else if(u[0]==="m"||u.indexOf("分")!==-1) m+=v;
+    else if(u[0]==="s"||u.indexOf("秒")!==-1) sec+=v;
+  }
+  if(found) return Math.round(h*3600+m*60+sec);
+  if(/^\d+(?:\.\d+)?$/.test(str)){
+    var num=parseFloat(str);
+    return Math.round(num < 300 ? num*60 : num);
+  }
+  return null;
+}
+function curNode(){var id=$("node").value;for(var i=0;i<NODES.length;i++)if(NODES[i].id===id)return NODES[i];return NODES[0];}
+function updateNodeHint(){var n=curNode();$("nodehint").innerHTML="已选：<code>"+n.name+" ("+n.planet+") · "+n.typeZh+" · "+n.id+" · 派系 "+n.faction+"</code>";}
+function refreshDurationHint(){
+  var inp=readInputs(false);
+  if(!inp) return;
+  var cfg=MODE_CFG[state.mode];
+  var auto=Math.round(inp.rounds*cfg.roundSec);
+  var isManual=$("dur").value.trim()!=="";
+  var hint=$("durhint");
+  if(hint) hint.textContent=isManual ? "已锁定为手动时长（"+mmss(inp.plannedDur)+"）" : "建议约 "+mmss(auto)+"（含少量自动浮动），可手动覆盖";
+}
+function setFieldError(id,message){
+  var input=$(id),error=$(id+"Error");
+  if(input) input.classList.toggle("invalid",!!message);
+  if(error) error.textContent=message||"";
+}
+function readInputs(forGen){
+  var ess=parseFloat($("ess").value);
+  if(!(ess>0)){
+    if(forGen){setFieldError("ess","请输入大于 0 的期望生息。");$("ess").focus();}
+    return null;
+  }
+  setFieldError("ess","");
+  var eph=state.unit==="h"?ess:ess*60;
+  var rawCount=Math.max(1,Math.floor(parseFloat($("rounds").value)||1));
+  var cfg=MODE_CFG[state.mode];
+  var rounds,waves=0;
+  if(state.mode==="defense"){
+    if(rawCount>90){rawCount=90;$("rounds").value=90;}
+    waves=Math.max(3,Math.round(rawCount/3)*3);
+    if(waves!==rawCount){$("rounds").value=waves;}
+    rounds=Math.max(1,Math.round(waves/3));
+  }else{
+    if(rawCount>cfg.maxRounds){rawCount=cfg.maxRounds;$("rounds").value=rawCount;}
+    rounds=Math.max(1,rawCount);
+  }
+  var clear=parseFloat($("clear").value);
+  var node=curNode();
+  var clearAuto=false;
+  if(!(clear>0)){clear=75+((Math.round(eph*13)+rounds*7+node.id.length)%2001)/100;clearAuto=true;}
+  var names=[];for(var i=0;i<4;i++){var v=$("p"+i).value.trim();names.push(v?cleanName(v):randName());}
+  var durStr=$("dur") ? $("dur").value.trim() : "";
+  var manualDur=parseDuration(durStr);
+  var plannedDur, durAuto=false;
+  if(manualDur!=null && manualDur>=30 && manualDur<=28800){
+    plannedDur=manualDur;
+  } else {
+    if(durStr && forGen){setFieldError("dur","格式示例：37:45、1h7m50s 或 2264。");$("dur").focus();return null;}
+    var jr=Math.min(120,Math.round(rounds*cfg.roundSec*0.08));
+    plannedDur=rounds*cfg.roundSec+(((Math.round(eph*7)+rounds*131+Math.round(clear*13)+node.id.length*17)%(2*jr+1))-jr);
+    durAuto=true;
+  }
+  setFieldError("dur","");
+  return {eph:eph,rounds:rounds,waves:waves,clear:clear,clearAuto:clearAuto,names:names,node:node,plannedDur:plannedDur,durAuto:durAuto};
+}
+
+/* ============ 逆向推算 ============ */
+function solve(inp){
+  var cfg=MODE_CFG[state.mode],n=inp.rounds;
+  var duration=inp.plannedDur||n*cfg.roundSec;
+  var fromRounds=expectedRounds(n);
+  var fullBuffTotal=inp.eph*duration/3600;
+  var drones=Math.round((fullBuffTotal-fromRounds)/(BASE_DROP*FULL_BUFF_MUL));
+  var minD=n*8;
+  if(!(drones>=minD))drones=minD;
+  var maxD=n*(state.mode==="defense"?70:650);
+  if(drones>maxD)drones=maxD;
+  /* 反取整痕迹：无人机与有效数各加确定性微扰（±2%），避免与输入完全互为整算 */
+  var jd=1+((((Math.round(inp.eph*3)+inp.rounds*37+inp.node.id.length*11)%41)-20)/1000);
+  drones=Math.max(8,Math.round(drones*jd));
+  /* 敌人生成必须按模式容量建模，不能由无人机/清场公式无限放大。
+   * defense: 真实波次预算和；interception/mirror: 真实样本 KPM。 */
+  var enemyAnchor;
+  if(state.mode==="defense"){
+    enemyAnchor=0;
+    var wc=inp.waves||n*3;
+    for(var wi=1;wi<=wc;wi++) enemyAnchor+=waveBudget(wi).total;
+    enemyAnchor*=.9874; // 真实 Casta: 5569 预算 -> Spawned 峰值 5499
+  }else if(state.mode==="interception"){
+    enemyAnchor=duration/60*158.94; // 真实 Cinxia 敌人事件 KPM
+  }else{
+    enemyAnchor=duration/60*464.54; // 真实 Tyana Pass 敌人事件 KPM
+  }
+  var requestedEnemy=drones*500/Math.max(1,inp.clear);
+  var influence=Math.max(-.035,Math.min(.035,(requestedEnemy/enemyAnchor-1)*.08));
+  var je=((((Math.round(inp.eph*11)+n*71+inp.node.id.length*19)%51)-25)/1000);
+  var enemyGenerated=Math.max(n*20,Math.round(enemyAnchor*(1+influence+je)));
+  if(state.mode==="defense" && (inp.waves||n*3)===81){
+    enemyGenerated=Math.max(5400,Math.min(5800,enemyGenerated));
+  }
+  var spawnDrop=state.mode==="defense"?.02:(state.mode==="interception"?.01:.008);
+  var setupSpawn=state.mode==="interception"?12:0;
+  var enemyEvents=Math.max(n*20,Math.round(Math.max(1,enemyGenerated-setupSpawn)/(1-spawnDrop)));
+  var valid=enemyEvents+drones;
+  var droneFull=drones*BASE_DROP*FULL_BUFF_MUL;
+  var totalFull=droneFull+fromRounds;
+  var eph=totalFull*3600/duration, epm=eph/60;
+  var eff=eph/inp.node.perHour*100;
+  var clearAct=drones/enemyGenerated/0.20*100;
+  return {duration:duration,fromRounds:fromRounds,drones:drones,valid:valid,
+    enemyGenerated:enemyGenerated,enemyEvents:enemyEvents,spawnDrop:spawnDrop,
+    spawnedMax:enemyGenerated,eph:eph,epm:epm,eff:eff,clearAct:clearAct,clear:inp.clear};
+}
+function mmss(s){s=Math.round(s);return Math.floor(s/60)+"分"+(s%60)+"秒";}
+function doPreview(){
+  var inp=readInputs(false);if(!inp)return;
+  var r=solve(inp);
+  $("pvBase").textContent=inp.node.perHour.toFixed(1);
+  $("pvDur").textContent=mmss(r.duration)+(inp.durAuto?"（自动）":"（手动）");
+  $("pvDrones").textContent=r.drones;
+  $("pvValid").textContent=r.enemyGenerated+" / "+r.valid;
+  $("pvEPH").textContent=r.eph.toFixed(1);
+  $("pvEPM").textContent=r.epm.toFixed(2);
+  $("pvClear").textContent=r.clearAct.toFixed(1)+"%"+(inp.clearAuto?"（自动）":"");
+  $("pvEff").textContent=r.eff.toFixed(1)+"%";
+  $("fhint").textContent=state.mode==="defense"?(inp.rounds*3+"波 / "+inp.rounds+"轮"):(inp.rounds+"轮");
+  refreshDurationHint();
+  if(window.gsap&&!matchMedia("(prefers-reduced-motion: reduce)").matches){gsap.fromTo(".pv .v",{opacity:.35,y:4},{opacity:1,y:0,duration:.18,stagger:.025,ease:"power2.out",overwrite:true});}
+}
+
+/* ============ 日志合成 ============ */
+/* ============ 42 节点真实关卡路径表（Host_StartMatch 实测 + 同星球/同派系地砖族推断） ============ */
+var NODE_LVL={ClanNode22:"Grineer/GrineerShipyardsDefense",SolNode164:"Infested/InfestedShipDefense",ClanNode24:"Corpus/CorpusOutpostDefense",SolNode149:"Grineer/GrineerShipyardsDefense",ClanNode4:"Corpus/CorpusGasCityDefense",ClanNode18:"Infested/InfestedShipDefense",ClanNode2:"Grineer/GrineerForestDefense",ClanNode6:"Corpus/CorpusIcePlanetDefense",ClanNode8:"Grineer/GrineerSettlementDefense",SolNode195:"Grineer/GrineerGalleonDefense",SolNode707:"Orokin/OrokinTowerDerelictDefense",SolNode408:"Orokin/OrokinTowerDefense",SolNode42:"Grineer/GrineerGalleonDefense",SolNode46:"Grineer/GrineerSettlementDefense",SolNode122:"Grineer/GrineerSealabDefense",SolNode402:"Orokin/OrokinTowerDefense",SolNode125:"Corpus/CorpusGasCityDefense",SolNode212:"Corpus/CorpusIcePlanetDefense",SolNode72:"Corpus/CorpusOutpostDefense",SolNode22:"Corpus/CorpusOutpostDefense",ClanNode0:"Corpus/CorpusOutpostDefense",SolNode305:"Orokin/OrokinMoonDefense",SolNode26:"Grineer/GrineerForestDefense",SettlementNode11:"Corpus/CorpusShipDefense",SolNode130:"Grineer/GrineerAsteroidDefense",ClanNode15:"Grineer/GrineerGalleonDefense",SolNode17:"Corpus/CorpusShipDefense",SolNode450:"LastWish/LastWishDefense",SolNode719:"EntratiLab/EntratiLabDefense",SolNode25:"Corpus/CorpusGasCityInterception",SolNode23:"Corpus/CorpusOutpostInterception",SolNode64:"Grineer/GrineerSealabInterception",SolNode106:"Grineer/GrineerSettlementInterception",SolNode172:"Infested/InfestedShipInterception",SolNode147:"Grineer/GrineerShipyardsInterception",SolNode224:"Grineer/GrineerAsteroidInterception",SolNode211:"Corpus/CorpusIcePlanetInterception",SolNode412:"Orokin/OrokinTowerInterception",SolNode43:"Corpus/CorpusOutpostInterception",SolNode85:"Grineer/GrineerForestInterception",SolNode18:"Grineer/GrineerGalleonInterception",SolNode185:"Grineer/GrineerGalleonInterception"};
+/* 怪池归属：cout=前哨族(Venus前缀实测), corpus=通用Corpus, 其余默认grineer（虚空堕落者/黑暗地带沿用行星基底，参考数据未覆盖处已在注释说明） */
+var NODE_POOL={ClanNode24:"cout",SolNode22:"cout",ClanNode0:"cout",SolNode72:"cout",SolNode23:"cout",SolNode43:"cout",ClanNode4:"corpus",SolNode125:"corpus",SolNode212:"corpus",SettlementNode11:"corpus",SolNode25:"corpus",SolNode211:"corpus",SolNode17:"corpus"};
+/* 显示名+路径成对出现，保证 Next spawn 与 Spawned a 行对应（全部字符串均出自参考日志实测） */
+var POOL_GRINEER=[["精英枪兵","EliteRifleLancer"],["精英枪兵","EliteRifleLancer"],["精英枪兵","EliteRifleLancer"],["盾枪兵","ShieldLancer"],["盾枪兵","ShieldLancer"],["骑兵","ShotgunLancer"],["骑兵","ShotgunLancer"],["禁卫军","GrineerMeleeStaffAgentNoLeader"],["禁卫军","GrineerMeleeStaffAgentNoLeader"],["天蝎","MacheteWomanNoCover"],["天蝎","MacheteWomanNoCover"],["鬣猫驯兽师","CatMaster"],["精英枪兵","GrineerMarineLeader"],["重型机枪手","MinigunBombard"],["开膛者","EviseratorLancer"],["轰击者","RocketBombard"],["精英枪兵","EliteShieldLancer"],["怒焚者","FlameLancer"],["禁卫军","GrineerMarinePistol"],["盾枪兵","GrineerFemale"],["天蝎","BeastMaster"],["精英枪兵","ChemStrikeNoxAgent"],["追踪者","GrineerCharger"]];
+var POOL_COUT=[["船员","VenusCombatSpacemanAgent"],["船员","VenusHeavyEliteSpacemanAgent"],["船员","VenusShotgunSpacemanAgent"],["船员","VenusHeavyMeleeEliteSpacemanAgent"],["鱼鹰","VenusDroneAttackAgent"],["鱼鹰","VenusShieldDroneAgent"],["鱼鹰","VenusLaserCannonBipedAgent"],["恐鸟","VenusShockwaveBipedAgent"],["鱼鹰","VenusIcewaveEliteBipedAgent"]];
+var POOL_CORPUS=[["船员","EliteSpacemanAgent"],["船员","RifleSpacemanAgent"],["船员","SniperSpacemanAgent"],["船员","NullifySpacemanAgent"],["鱼鹰","LaserCannonBipedAgent"],["鱼鹰","ShockwaveBipedAgent"],["鱼鹰","DiscDroneAgent"],["鱼鹰","ShieldDroneAgent"],["恐鸟","SuperMoaBipedAgent"],["技师","ShipCrewmanTechAgent"]];
+var POOL_MIRROR=[[null,"EliteRifleLancer"],[null,"LaserCannonBipedAgent"],[null,"EliteSpacemanAgent"],[null,"GrineerMarineLeader"],[null,"ShockwaveBipedAgent"],[null,"JetpackMarine"],[null,"MacheteWoman"],[null,"GrineerFemale"],[null,"ShieldLancer"],[null,"EvisceratorLancer"],[null,"GrineerMarinePistol"],[null,"MinigunBombard"],[null,"NullifySpacemanAgent"],[null,"ShieldDroneAgent"],[null,"SniperSpacemanAgent"],[null,"DiscDroneAgent"],[null,"SuperMoaBipedAgent"]];
+var NRS=["172.237.79.150:4950","172.233.137.37:4950","173.255.215.89:4950","172.238.189.215:4950","172.238.122.193:4950","172.236.1.138:4950","172.233.176.43:4950"];
+
+function L(arr,t,msg){arr.push([t,msg]);}
+function advance(t,dt){return t+Math.max(0.001,dt*rf(0.85,1.25));}
+
+function waveBudget(w){
+  var opening=[49,52,54,56,59,61,64,66,68,70];
+  var total=w<=opening.length?opening[w-1]:70;
+  var tier=Math.min(5,Math.floor((w+1)/3));
+  var exi=w===1?0:Math.min(18,Math.floor(w*0.55));
+  return {total:total,tier:tier,exi:exi};
+}
+
+function buildLog(inp,prog){
+  return new Promise(function(resolve){
+    var out=[],t=0.09;
+    var cfg=MODE_CFG[state.mode],node=inp.node,names=inp.names,N=inp.rounds;
+    var sol=solve(inp),D=sol.drones,V=sol.valid;
+    var now=new Date();
+    var wd=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][now.getDay()];
+    var mo=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][now.getMonth()];
+    var dd=String(now.getDate()).padStart(2," ");
+    var hm=now.toTimeString().slice(0,8),yr=now.getFullYear();
+    var wall=wd+" "+mo+" "+dd+" "+hm+" "+yr;
+    var user="Player"+ri(100,999),pc="PC-"+hex(8);
+    var hostIP=ri(11,223)+"."+ri(0,255)+"."+ri(0,255)+"."+ri(1,254)+":"+ri(10000,60000);
+    var pubIP=ri(11,223)+"."+ri(0,255)+"."+ri(0,255)+"."+ri(1,254);
+    var profR=hex(32),profW1=hex(32);
+    var memGB=ri(12,32),diskC=(ri(100,900)*1e9)|0,diskD=(ri(100,900)*1e9)|0;
+
+    /* ---- 启动头 ---- */
+    L(out,t,"Sys [Diag]: Process Command-line: -windowMode:2 -shaderCache:1 -graphicsDriver:dx12 -gpuPreference:2 -cluster:public -language:zh -clienttype:Steam");t+=0.001;
+    L(out,t,"Sys [Diag]: Build Label: 2026.08.20.09.36 Retail Windows x64 [Stripped]");t+=0.002;
+    L(out,t,"Sys [Diag]: Build Unique ID: 2436138986");t+=0.001;
+    L(out,t,"Sys [Diag]: Windows user-name: "+user);t+=0.001;
+    L(out,t,"Sys [Diag]: Windows computer-name: "+pc);t+=0.001;
+    L(out,t,"Sys [Diag]: Current time: "+wall+" [UTC: "+wall+"]");t+=0.001;
+    L(out,t,"Sys [Diag]: Current directory: C:\\Games\\Steam\\steamapps\\common\\Warframe\\Tools");t+=0.05;
+    L(out,t,"Sys [Diag]: Processor: Intel Octo-HT-P + Quad-E 13th Gen Core i7-13700K 3400MHz HT/SSE/SSE2/SSE3/SSSE3/SSE41/SSE42/AVX/AVX2/F16C/FMA3/SHA/POPCNT/ABM/BMI1/BMI2/CLMUL F/M/S/EF/EM/UC: 6/7/2/0/9/18");t+=0.05;
+    L(out,t,"Sys [Diag]: Physical Memory: "+ri(10,20)+"GB / "+memGB+"GB free");t+=0.001;
+    L(out,t,"Sys [Diag]: Address Space: 128TB / 128TB free");t+=0.001;
+    L(out,t,"Sys [Diag]: C:\\pagefile.sys: "+ri(2,8)+"GB / "+ri(2,8)+"GB free [System Managed]");t+=0.001;
+    L(out,t,"Sys [Diag]: Page size: 4KB (Granularity: 64KB)");t+=0.001;
+    L(out,t,"Sys [Diag]: Operating System: Windows 11");t+=0.001;
+    L(out,t,"Sys [Diag]: Mitigation Policies: DEP-P BUR HI");t+=0.002;
+    L(out,t,"Sys [Diag]: System Processes: "+ri(240,320));t+=0.001;
+    L(out,t,"Sys [Diag]: System Threads: "+ri(4500,7000)+",000".slice(0,0)+(ri(4500,7000)));t+=0.001;
+    L(out,t,"Sys [Diag]: System Handles: "+ri(130000,230000));t+=0.001;
+    L(out,t,"Sys [Diag]: System GDI Objects: 0");t+=0.001;
+    L(out,t,"Sys [Diag]: System USER Objects: 0");t+=0.001;
+    L(out,t,"Sys [Diag]: System Up-Time: "+ri(0,6)+"d "+ri(0,23)+"h "+ri(0,59)+"m "+ri(0,59)+"s");t+=0.001;
+    L(out,t,"Sys [Diag]: Free Disk Space on C: "+diskC+" bytes");t+=0.001;
+    L(out,t,"Sys [Diag]: Free Disk Space on D: "+diskD+" bytes");t+=0.001;
+    L(out,t,"Sys [Diag]: Found Monitor: (0, 0) - (1920, 1080) : 1920x1080");t+=0.001;
+    L(out,t,"Sys [Diag]: Process is DPI-aware");t+=0.001;
+    L(out,t,"Sys [Diag]: Clock frequency: 10,000,000Hz");t+=0.03;
+    L(out,t,"Gfx [Info]: Private shader options need 22 bits");t+=0.001;
+    L(out,t,"Sys [Info]: CancelJobs batchcount 0");t+=0.008;
+    L(out,t,"Sys [Info]: Loading packages took 0.0ms");t+=0.001;
+    L(out,t,"Sys [Info]: Redirecting package load to: C:\\Users\\"+user+"\\AppData\\Local\\Warframe\\Editor.cfg");t+=0.001;
+    L(out,t,"Sys [Info]: Cache languages enabled: _zh");t+=0.007;
+    L(out,t,"Sys [Info]: Scanning C:\\Games\\Steam\\steamapps\\common\\Warframe\\Cache.Windows\\ for cache blocks...");t+=0.001;
+    L(out,t,"Sys [Info]: Found "+ri(39,55)+" cache blocks...");t+=0.004;
+    L(out,t,"Sys [Info]: Downloading cache manifest index...");t+=rf(0.4,1.1);
+    var tocs=[["H.Misc",246952,775],["H.Font",5399,27],["B.Font",5388,52],["H.AnimRetarget",11443,188],["B.AnimRetarget",9444,120],["B.Misc",151659,39],["H.LightMap",60185,31],["B.LightMap",57262,59]];
+    tocs.forEach(function(x){L(out,t,"Sys [Info]: Loaded TOC for Windows/"+x[0]+" (took "+rf(8,80).toFixed(1)+"ms, loaded "+x[1]+" entries, found "+x[2]+" deleted)");t+=rf(0.01,0.09);});
+    L(out,t,"Sys [Info]: Cache manifest hash 7r67GUGE-i2sDApCwr--sA");t+=0.5;
+    L(out,t,"Sys [Info]: Initialize dictionary: 1048576b");t+=rf(0.4,0.8);
+    L(out,t,"Sys [Info]: Loaded package cache in 0.77s (Parse: 0.73s)");t+=0.35;
+    L(out,t,"Sys [Info]: Loaded deps cache in 353ms");t+=0.07;
+    L(out,t,"Sys [Info]: ResourceMgr release queue size=128");t+=0.001;
+    L(out,t,"Net [Info]: RMI::Initialize - Methods: 433 Hash: 14371960837984678708");t+=0.001;
+    L(out,t,"Sys [Info]: Redirecting package load to: C:\\Users\\"+user+"\\AppData\\Local\\Warframe\\EE.cfg");t+=0.001;
+    L(out,t,"Sys [Diag]: Engine config profile: /Configs/EE.cfg/Windows_Config");t+=0.01;
+    L(out,t,"Sys [Info]: JobMgr: 14 threads (+4 low)");t+=0.01;
+    L(out,t,"Phys [Info]: Custom physx allocator in use");t+=0.01;
+    L(out,t,"Phys [Info]: PhysX Core Version: 4.1.1.0");t+=0.01;
+    L(out,t,"Phys [Info]: PhysX SDK initialized.");t+=0.01;
+    L(out,t,"Sys [Info]: Driver registered: ScriptDriver Supported types: [Script]");t+=0.01;
+    L(out,t,"Script [Info]: ScriptMgr::Initialize() 0 bytes, 0 allocs");t+=0.01;
+    L(out,t,"Sys [Info]: Using language: _zh");t+=0.01;
+    L(out,t,"Sys [Info]: Loaded TOC for Windows/H.Misc_zh (took 9.57ms, loaded 29799 entries, found 2 deleted)");t+=0.01;
+    L(out,t,"Sys [Info]: Loaded language cache in 150ms");t+=0.01;
+    L(out,t,"Sys [Diag]: Command line: -client");t+=0.01;
+    L(out,t,"Sys [Diag]: SRand seeded with: -"+ri(1000000000000000000,9999999999999999999));t+=0.02;
+    L(out,t,"Sys [Info]: ResourceLoader 0x00000167BD553BD0 (/Lotus/Types/GameRules/LotusGameConfig) Found 750 items to load (0ms) [Heap: 168,022,464/168,099,840 Footprint: 256,421,888 Handles: 510]");t+=0.01;
+    L(out,t,"Sys [Info]: Resloader 0x00000167BD553BD0 (/Lotus/Types/GameRules/LotusGameConfig) starting");t+=0.05;
+    L(out,t,"Sys [Info]: Finished load of Shader batch (1) [0.04s and 2 frames at 21 ms/frame avg, 10 ms/update peak], 1/0/3, 2 item(s), 0k total so far, 0.00% utilization");t+=0.05;
+    L(out,t,"Sys [Error]: Could not find game rules: /EE/Types/GameRules/DefaultGameRules");t+=0.01;
+    L(out,t,"Sys [Error]: Required by game config /EE/Types/GameRules/GameConfig");t+=0.01;
+    L(out,t,"Sys [Error]: Failed to create run-time type: DefaultGameRules (parent GameRules is abstract)");t+=0.03;
+    L(out,t,"Sys [Info]: Finished load of Misc batch (2) [0.12s and 6 frames at 20 ms/frame avg, 17 ms/update peak], 2/1/8, 394 item(s), 640k total so far, 0.00% utilization");t+=0.05;
+    L(out,t,"Net [Info]: Local address: 114.214.182.82".replace("114.214.182.82",ri(11,223)+"."+ri(0,255)+"."+ri(0,255)+"."+ri(2,254)));t+=0.01;
+    L(out,t,"Net [Info]: UPnP enabled.");t+=0.01;
+    L(out,t,"Net [Info]: NAT-PMP enabled.");t+=0.02;
+    L(out,t,"Net [Info]: Initializing UPnP");t+=0.05;
+    L(out,t,"Gfx [Info]: IDXGIFactory7 features available");t+=0.01;
+    L(out,t,"Gfx [Info]: Borderless mode. Desktop resolution is 1920x1080");t+=0.1;
+    L(out,t,"Gfx [Info]: Using D3D adapter 0: NVIDIA GeForce RTX "+pick(["4060","4070","4080","5070","5080"])+" VendorId: 0x10DE DeviceId: 0x2C02 SubSysId: 0x89E01043 Revision: 161");t+=0.01;
+    L(out,t,"Gfx [Info]: Dedicated Video Memory: "+pick(["8GB","12GB","16GB"]));t+=0.01;
+    L(out,t,"Gfx [Info]: Supported shader model: SM6.9");t+=0.02;
+    L(out,t,"Gfx [Info]: Shader Cache: SINGLE_PSO LIBRARY");t+=0.01;
+    L(out,t,"Gfx [Info]: PSO Cache Enabled");t+=0.05;
+    L(out,t,"Sys [Info]: Creating 14 thread workers");t+=0.3;
+    L(out,t,"Sys [Info]: Profile hash on read: "+profR);t+=1.4;
+    L(out,t,"Sys [Info]: Steam active. IsBicPic=0 IsSteamDeck=0");t+=0.3;
+    /* 飞船 + 关卡加载 */
+    L(out,t,"Sys [Info]: ClientImpl::Connect sending CMSG_CONTACT message to server localhost:4950 (no session), connection: 0");t+=2;
+    L(out,t,"Game [Info]: CreatePlayerForClient. id=0, user name=Player");t+=2.5;
+    L(out,t,"Sys [Info]: ===[ Game successfully connected to: /Lotus/Levels/Proc/PlayerShip/AeAh.lp ]===");t+=0.6;
+    L(out,t,"Sys [Info]: Logged in "+names[0]);t+=0.1;
+    L(out,t,"Sys [Info]: Profile hash on read: "+profR);t+=0.5;
+    NRS.forEach(function(s){for(var k=0;k<3;k++){L(out,t,"Net [Info]: Server test reply from "+s+" ("+ri(150,1600)+"ms, "+ri(2,26)+"L), public address "+pubIP+":"+ri(1000,60000));t+=0.001;}});
+    t+=2;
+    /* 大厅组队 */
+    var mm=[hex(24),hex(24),hex(24),hex(24)];
+    L(out,t,"Net [Info]: AddSquadMember: "+names[0]+ICON+", mm="+mm[0]+", squadCount=1");t+=rf(20,40);
+    for(var si=1;si<4;si++){L(out,t,"Net [Info]: AddSquadMember: "+names[si]+ICON+", mm="+mm[si]+", squadCount="+(si+1));t+=rf(1,45);L(out,t,"Sys [Info]: Profile hash on write: "+hex(32));t+=rf(2,20);}
+    /* 投票 + 进图 */
+    var lvlPath="/Lotus/Levels/Proc/"+(NODE_LVL[node.id]||"Grineer/GrineerShipyardsDefense");
+    var lpTag=(function(){var s="",ch="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",n=pick([4,4,4,8]);for(var i=0;i<n;i++)s+=ch[ri(0,ch.length-1)];return s;})();
+    ["SolNode137 - NUOVO","SolNode135 - THON","SolNode131 - PALLAS","SolNode59 - EURASIA"].slice(0,ri(2,4)).forEach(function(nr){L(out,t,"Script [Info]: MapRedux.lua: MapRedux::NodeRollOver "+nr);t+=rf(1,4);});
+    var tVote=t+rf(60,120);
+    L(out,tVote,"Script [Info]: MapRedux.lua: Confirm sector "+node.id+"_EliteAlert");tVote+=0.001;
+    L(out,tVote,"Net [Info]: Set squad mission: {\"name\":\""+node.id+"_EliteAlert\"}");tVote+=0.001;
+    L(out,tVote,"Script [Info]: ThemedSquadOverlay.lua: Pending mission: "+node.id+"_EliteAlert");tVote+=0.001;
+    L(out,tVote,"Script [Info]: ThemedSquadOverlay.lua: Cached mission name="+node.name+" ("+node.planet+") - 仲裁 ("+node.id+")");
+    L(out,tVote,"Script [Info]: ThemedSquadOverlay.lua: ShowMissionVote "+node.name+" ("+node.planet+") - 仲裁 - 等级 (60-80) ("+node.id+"_EliteAlert) -1");
+    tVote+=rf(1.5,2.5);
+    L(out,tVote,"Script [Info]: ThemedSquadOverlay.lua: ShowMissionVote "+node.name+" ("+node.planet+") - 仲裁 - 等级 (60-80) ("+node.id+"_EliteAlert) -1");
+    t=tVote+rf(4,10);
+    L(out,t,"Script [Info]: ThemedSquadOverlay.lua: Mission name: "+node.name+" ("+node.planet+") - 仲裁");
+    t+=0.001;L(out,t,"    missionType="+cfg.mt);t+=0.5;
+    L(out,t,"Script [Info]: ThemedSquadOverlay.lua: Host changed to gameModeId="+ri(1000000,1999999)+" ("+node.id+"_EliteAlert), Elo="+ri(20,40));t+=0.01;
+    L(out,t,"Script [Info]: ThemedSquadOverlay.lua: Host loading {\"name\":\""+node.id+"_EliteAlert\"} with MissionInfo:");t+=0.01;
+    L(out,t,"Script [Info]: ThemedSquadOverlay.lua: Lobby::Host_StartMatch: launching level for "+node.id+"_EliteAlert ("+lvlPath+")");t+=0.01;
+    names.forEach(function(nmL,ixL){if(ixL>0){L(out,t,"Net [Info]: Sending LOAD_LEVEL to "+nmL+ICON+" [mission={\"name\":\""+node.id+"_EliteAlert\"}, hub=]");t+=0.05;}});t+=3;
+    L(out,t,"Game [Info]: FrameworkCmd::OpenLevel - "+lvlPath);t+=0.02;
+    L(out,t,"Sys [Info]: Resource load completed 0x00000168FDDF61F0 ("+lvlPath+") in one pass and 0.2s (I/O ~= 0.3%, inherited 45 of 79)");t+=0.03;
+    L(out,t,"Game [Info]: ServerFramework:OpenLevel - "+lvlPath+"/"+lpTag+".lp");t+=0.1;
+    L(out,t,"Game [Info]: Level="+lvlPath+"/"+lpTag+".lp");t+=0.01;
+    L(out,t,"Sys [Info]: FSM::LoadLevel");t+=0.01;
+    L(out,t,"Sys [Info]: "+lvlPath+"/"+lpTag+".lp: 0, prio: 1, layer: 4294967295, (0, 0, 0, 1), autonomous: 0");t+=0.5;
+    L(out,t,"Sys [Info]: Profile hash on write: "+hex(32));t+=0.15;
+    L(out,t,"Game [Info]: CreatePlayerForClient. id=0, user name="+names[0]+ICON);t+=0.07;
+    L(out,t,"Sys [Info]: SyncAutoPopulatedConsumables for mission "+cfg.mt+" with location "+node.id);t+=0.08;
+    L(out,t,"Script [Info]: HudRedux.lua: USE SLOW UPDATE TOUCH BUTTONS\tfalse");t+=0.01;
+    L(out,t,"Script [Info]: HudRedux.lua: HudRedux:RegisterCallbacks complete");t+=0.01;
+    L(out,t,"Sys [Info]: Created /Lotus/Interface/HudRedux.swf");t+=0.3;
+    L(out,t,"Game [Info]: CreatePlayerForClient. id=2, user name="+names[2]+ICON);t+=0.4;
+    L(out,t,"Script [Info]: HudRedux.lua: DBG: HudVis 1");t+=0.01;
+    L(out,t,"Script [Info]: HudRedux.lua: HUD REDUX: Pushing background movie from Update");t+=0.2;
+    L(out,t,"Game [Info]: CreatePlayerForClient. id=3, user name="+names[3]+ICON);t+=0.13;
+    L(out,t,"Game [Info]: CreatePlayerForClient. id=1, user name="+names[1]+ICON);t+=0.1;
+    L(out,t,"Sys [Error]: /Lotus/Types/Enemies/Corpus/Drones/AIWeek/CorpusEliteShieldDroneAgent [NpcAgent] had problems with its property text:");t+=0.6;
+
+    var agentIdx=0,spawned=0;
+    var POOL=state.mode==="mirror"?POOL_MIRROR:(NODE_POOL[node.id]==="cout"?POOL_COUT:(NODE_POOL[node.id]==="corpus"?POOL_CORPUS:POOL_GRINEER));
+    var OPCLOAK=state.mode==="interception"?"/Lotus/Fx/PowersuitAbilities/Loki/CloakAltA":"/Lotus/Fx/PowersuitAbilities/Loki/Cloak";
+    var FW_IDS=["69399e2b322d221f850e0c70","693a2280b374d40e57076015"],fwFlip=0;
+    var haveKuva=rnd()<0.7;
+    var spawnSkip=sol.spawnDrop;
+    var TID_T=state.mode==="mirror"?524:15, TID_O=state.mode==="mirror"?531:35;
+    var BRK=state.mode==="mirror"?("19"+String(ri(100000000000,999999999999))):("290"+String(ri(1000000000,9999999999)));
+    function petLine(npc,bump){var sp=bump?(spawned++):0;L(out,t,"AI [Info]: OnAgentCreated /Npc/"+npc+agentIdx+" Live "+ri(0,7)+" Spawned "+sp+(bump?"":" Ignored")+" Ticking 0 Paused 0 IgnoredTicking 0 MonitoredTicking 0 AllyLive 0 AllyActive 0 NeutralActive 0");agentIdx++;t=advance(t,0.3);}
+    (state.mode==="defense"?["CatbrowPetAgent","KubrowPetAgent","SentinelAgent","CatbrowPetAgent"]:state.mode==="interception"?["CatbrowPetAgent","CatbrowPetAgent","CatbrowPetAgent","CatbrowPetAgent"]:["CatbrowPetAgent","CatbrowPetAgent","CatbrowPetAgent","KubrowPetAgent"]).forEach(function(pp){petLine(pp);});
+    t+=rf(0.3,0.8);
+    var t0=t+rf(0.5,1.2);
+    L(out,t0,"Net [Info]: GameRulesImpl - changing state from SS_WAITING_FOR_PLAYERS to SS_STARTED");
+    t=t0+rf(0.3,1.0);
+    if(state.mode==="defense"){
+      L(out,t,"AI [Info]: OnAgentCreated /Npc/HexisAllyAgentDefense"+agentIdx+" Live 4 Spawned 0 Ignored Ticking 0 Paused 4 IgnoredTicking 0 MonitoredTicking 0 AllyLive 4 AllyActive 0 NeutralActive 0");agentIdx++;t+=0.5;
+      petLine("VoidCloneSentinelAgent");petLine("VoidCloneSentinelAgent");petLine("VoidCloneSentinelAgent");
+    }else if(state.mode==="interception"){
+      for(var si2=0;si2<8;si2++)petLine("VoidCloneCatbrowPetAgent",true);
+      petLine("CatbrowPetAgent",true);petLine("CatbrowPetAgent",true);petLine("CatbrowPetAgent",true);petLine("CatbrowPetAgent",true);
+    }else{
+      for(var si3=0;si3<10;si3++)petLine("VoidCloneCatbrowPetAgent");
+      petLine("CatbrowPetAgent");petLine("CatbrowPetAgent");petLine("CatbrowPetAgent");petLine("CatbrowPetAgent");petLine("SentinelAgent");petLine("SentinelAgent");
+    }
+    t+=rf(0.5,1.5);
+    if(state.mode==="defense"){
+      L(out,t,"Script [Info]: WaveDefend.lua: WaveDefend - SetupDefense");t+=0.02;
+      L(out,t,"Script [Info]: WaveDefend.lua: Starting WaveDefense");t+=0.01;
+      L(out,t,"Script [Info]: WaveDefend.lua: WaitForDefenseAvatar false");t+=0.01;
+      L(out,t,"Script [Info]: WaveDefend.lua: Defense avatar spawned/found");t+=0.01;
+      L(out,t,"Script [Info]: WaveDefend.lua: Defense avatar was spawned at position ("+rf(40,70).toFixed(2)+", "+rf(45,65).toFixed(2)+", "+rf(30,60).toFixed(2)+")");t+=0.2;
+    }
+    if(state.mode!=="mirror"){
+      L(out,t,"Script [Info]: HudRedux.lua: Queuing new transmission: DArbStart0020Arbiters");t+=0.01;
+      L(out,t,"Script [Info]: HudRedux.lua: Queued a transmission from Hud: /Lotus/Sounds/Dialog/Arbitrations/DArbStart0020Arbiters");t+=0.2;transmissionPair();
+    }
+    L(out,t,"Script [Info]: HudRedux.lua: DBG: HudVis 0");t+=rf(8,15);
+    if(state.mode==="mirror"){
+      L(out,t,"Script [Info]: HudRedux.lua: Queuing new transmission: DCitMssnInt0500Lotus");t+=0.01;
+      L(out,t,"Script [Info]: HudRedux.lua: Queued a transmission from Hud: /Lotus/Sounds/Dialog/CitrineLWDefenseMode/DCitMssnInt0500Lotus");t+=0.3;transmissionPair();
+      L(out,t,"Script [Info]: HudRedux.lua: DBG: HudVis 0");t+=rf(40,80);
+    }
+    if(state.mode==="interception"){
+      L(out,t,"Script [Info]: TerritoryMission.lua: SquadLib.lua::InitLib - Using 3 entries.");t+=2;
+    }
+    if(state.mode==="defense"){
+      L(out,t,"Script [Info]: WaveDefend.lua: Defense: Starting defense waves");t+=0.02;
+      L(out,t,"Script [Info]: WaveDefend.lua: _SleepBetweenWaves(3)");t+=3;
+    }
+
+    /* ---- 八维逐轮画像 ----
+     * 八维总览读：无人机 / 有效敌人 / 有效时长 / 饱和度 /
+     * 真空期≥12秒 / 敌人占用率 / 敌人-无人机比 / 10秒峰值无人机。
+     * 高压恢复：按模式阈值（12/10、16/13、28/20）分簇生成可变高压驻留与恢复时长。 */
+    var roundProfile=[],i,dPhase=rf(0,6.28),dWeights=[],wSum=0;
+    var _highPoolDef=[0,0,0.3,0,0,0,0,0,0,0,1.4,0,0,0,0.4,7.4,0,0,0,0,0,0.3,4.5,0,0,0.7,5.7];
+    var _highPoolInt=[23,15.1,2.8,5.4,4.5,5.7,6,3.6,3.6,4.3];
+    var _highPoolMir=[0.9,7,9.6,13.7,7.2,10.9,10.2,8.9,15.1];
+    for(i=0;i<N;i++){
+      var progress=N===1?0.5:i/(N-1);
+      var pressureWave=Math.sin(progress*5.2+dPhase*1.15);
+      var paceWave=Math.sin(progress*4.1+dPhase);
+      var fatigue=progress*0.12;
+      dWeights[i]=Math.max(0.55,1+0.22*paceWave+rf(-0.10,0.10));
+      wSum+=dWeights[i];
+      var baseHigh;
+      if(state.mode==="defense") baseHigh=_highPoolDef[ri(0,_highPoolDef.length-1)];
+      else if(state.mode==="interception") baseHigh=_highPoolInt[ri(0,_highPoolInt.length-1)];
+      else baseHigh=_highPoolMir[ri(0,_highPoolMir.length-1)];
+      baseHigh=Math.max(0, baseHigh+rf(-1.2,1.2));
+      if(state.mode==="defense") baseHigh=Math.min(8, baseHigh*1.3);
+      else if(state.mode==="mirror") baseHigh=Math.min(25, baseHigh*1.75);
+      roundProfile.push({
+        durationFactor:Math.max(.80,Math.min(1.20,1+0.10*paceWave+rf(-.06,.06))),
+        clear:Math.max(67,Math.min(104,85+10*paceWave-5*fatigue+rf(-7,7))),
+        liveTarget:Math.max(4,Math.min(cfg.cap-2,Math.round(9+(cfg.cap-13)*progress+5*pressureWave+rf(-2,2)))),
+        highPct:Math.max(0, Math.min(state.mode==="defense"?8:25, baseHigh)),
+        burst:Math.max(0,Math.min(.22,.055+.065*Math.max(0,pressureWave)+rf(-.025,.035))),
+        pauseSpike:(i>0&&rnd()<.18),
+      });
+    }
+    function distribute(total, weights, minimum){
+      var result=[],sum=weights.reduce(function(a,b){return a+b;},0),remaining=total;
+      for(var di=0;di<weights.length;di++){
+        var take=di===weights.length-1?remaining:Math.max(minimum,Math.round(total*weights[di]/sum));
+        take=Math.min(take,Math.max(minimum,remaining-(weights.length-1-di)*minimum));
+        result.push(take);remaining-=take;
+      }
+      result[result.length-1]+=total-result.reduce(function(a,b){return a+b;},0);
+      return result;
+    }
+    var perRound=distribute(D,dWeights,3),validWeights=[];
+    for(i=0;i<N;i++) validWeights.push(perRound[i]*(1+500/roundProfile[i].clear));
+    var perValid=distribute(V,validWeights,5);
+    for(i=0;i<N;i++){
+      if(perValid[i]<=perRound[i]) perValid[i]=perRound[i]+1;
+      roundProfile[i].drones=perRound[i];
+      roundProfile[i].valid=perValid[i];
+    }
+    // 高压分簇时间表（每轮独立，按目标占比将高压事件聚类，避免随机抖动被平均）
+    for(i=0;i<N;i++){
+      var pct=roundProfile[i].highPct;
+      if(state.mode==="defense"){ roundProfile[i].lowLive=9+rf(-1,1); roundProfile[i].highLive=16; }
+      else if(state.mode==="interception"){ roundProfile[i].lowLive=10+rf(-1.5,1.5); roundProfile[i].highLive=24+rf(-1,2); }
+      else { roundProfile[i].lowLive=16+rf(-1.5,1.5); roundProfile[i].highLive=33+rf(-1,1.5); }
+      var v=perValid[i];
+      var highEvents=Math.round(v*pct/100*1.25);
+      highEvents=Math.min(v, Math.max(0, highEvents));
+      var arr=new Array(v); for(var k2=0;k2<v;k2++) arr[k2]=false;
+      var bMin,bMax;
+      if(state.mode==="defense"){ bMin=3; bMax=7; }
+      else if(state.mode==="interception"){ bMin=4; bMax=9; }
+      else { bMin=5; bMax=10; }
+      var remain=highEvents;
+      var attempts=0;
+      while(remain>0 && attempts<300){
+        var burst=Math.min(remain, ri(bMin,bMax));
+        var start=-1;
+        for(var tries=0; tries<40; tries++){
+          var s=ri(0, v-burst);
+          var ok=true;
+          for(var kk=0;kk<burst;kk++) if(arr[s+kk]){ ok=false; break; }
+          if(ok){ start=s; break; }
+        }
+        if(start===-1) break;
+        for(var kk=0;kk<burst;kk++) arr[start+kk]=true;
+        remain-=burst;
+        attempts++;
+      }
+      roundProfile[i].highMap=arr;
+    }
+    var curLiveBase=roundProfile[0].lowLive;
+    var curRoundBase=0;
+    var gapSpec={gapAt:-1,done:true};
+    /* 镜像环波编号按任务级游走（递增约六成、封顶 5 回落到 1），与实测一致；波次按递增段计数 */
+    /* 标准 9 轮直接采用实测序列（29 行），保证波次口径一致 */
+    var lwPlan=(function(){if(state.mode==="mirror"&&N===9)return [[1,2],[3,1,2],[3,4],[5,1,2],[3,1,2],[3,1,2],[1,2],[3,1,2],[3,1,1,1,1,1,1,2]];
+      var arr=[],w=0;for(var r2=0;r2<N;r2++){var cnt=(r2===N-1)?4:3,nums=[];for(var k=0;k<cnt;k++){if(w<1||w>=5||rnd()<0.4)w=1;else w++;nums.push(w);}arr.push(nums);}return arr;})();
+    if(N>1&&V>20&&state.mode!=="interception"){var gr=ri(1,N-1),cb=0;for(var gi=0;gi<gr;gi++)cb+=perValid[gi];gapSpec={gapAt:cb+Math.floor(perValid[gr]*rf(0.3,0.7)),done:false};}
+
+    var _liveCap=state.mode==="defense"?29:state.mode==="interception"?32:34;
+    var live=state.mode==="mirror"?ri(14,18):state.mode==="interception"?ri(10,14):ri(8,12),transTimes=[],droneIdx=0;
+    var lvl=60;
+    var step=0;
+    var nextId=4;
+    var curRoundIdx=0;
+    var longGapAt=N>2?ri(0,N-2):-1;
+    var rejoins=(function(){var rc=N>=6?3:(N>=3?2:1);var pos=rc===1?[0.5]:(rc===2?[0.15,0.5]:[0.07,0.10,0.13]);var pids=rc===1?[2]:(rc===2?[3,1]:[3,1,1]);var cnts=rc===1?[4]:(rc===2?[3,4]:[3,4,4]);var arr=[];for(var qi=0;qi<rc;qi++)arr.push({at:pos[qi],pid:pids[qi],cnt:cnts[qi],done:false});return arr;})();
+
+    function agentLine(isDrone){
+      var pr=pick(POOL);
+      var npc=isDrone?"CorpusEliteShieldDroneAgent":pr[1];
+      var base=isDrone?10:8;
+      // 高压分簇：本事件是否落在高压块内（按预生成的 highMap）
+      var prof=roundProfile[curRoundIdx];
+      var isHigh=false;
+      if(prof && prof.highMap){
+        var idx=step - curRoundBase;
+        if(idx>=0 && idx < prof.highMap.length) isHigh=!!prof.highMap[idx];
+      }
+      var liveTarget=isHigh ? prof.highLive : prof.lowLive;
+      live=Math.max(2,Math.min(_liveCap,live+Math.max(-3,Math.min(3,Math.round((liveTarget-live)*0.62)))+ri(-2,2)));
+      var mon;
+      if(isHigh){
+        var rHigh=state.mode==="defense"?rf(0.88,0.98):state.mode==="interception"?rf(0.88,0.97):rf(0.92,0.99);
+        mon=Math.max(0,Math.min(live,Math.round(live*rHigh)));
+        var thr=state.mode==="defense"?12:state.mode==="interception"?16:28;
+        if(mon <= thr) mon=Math.min(live, thr+1+ri(0,2));
+      } else {
+        var rLow=state.mode==="defense"?rf(0.15,0.35):state.mode==="interception"?rf(0.32,0.52):rf(0.52,0.68);
+        mon=Math.max(0,Math.min(live,Math.round(live*rLow)));
+        if(isDrone) mon=Math.max(0,Math.min(live,Math.round(live*(state.mode==="defense"?rf(0.12,0.35):rf(0.35,0.60)))));
+      }
+      var paused=(state.mode==="interception"&&t-t0<8)?4:0;
+      var ally=ri(3,8);
+      var sp=spawned;
+      if(!isDrone && rnd()>spawnSkip)spawned++;
+      L(out,t,"AI [Info]: OnAgentCreated /Npc/"+npc+agentIdx+" Live "+live+" Spawned "+sp+" Ticking "+Math.max(0,live-ri(0,2))+" Paused "+paused+" IgnoredTicking "+Math.max(0,live-mon-ri(0,3))+" MonitoredTicking "+mon+" AllyLive "+ally+" AllyActive "+ally+" NeutralActive "+ri(0,2));
+      agentIdx++;if(isDrone)droneIdx++;
+      drip();
+      if(!gapSpec.done&&step===gapSpec.gapAt){gapSpec.done=true;t+=rf(100,180);}
+    }
+    function retransmit(){
+      var ch=ri(1,3);
+      L(out,t,"Net [Info]: "+ch+": Retransmit throttle: 1.05, threshold: "+rf(0.2,1.8).toFixed(5)+"s, last received packet: "+rf(0.005,0.25).toFixed(6)+"s ago");
+      if(rnd()<0.25){
+        L(out,t,"Net [Info]: "+ch+": Pending reliable messages, channel 30: "+ri(30,140));t+=0.001;
+        L(out,t,"Net [Info]: "+ch+": Lost packets: "+ri(20,320)+", acked packets: "+ri(8000,120000));t+=0.001;
+        L(out,t,"Net [Info]: "+ch+": Ping: "+ri(50,200));t+=0.001;
+        if(state.mode!=="mirror"&&rnd()<0.6){L(out,t,"Net [Info]: "+ch+": Queued reliable: 0");t+=0.001;}
+        L(out,t,"Net [Info]: "+ch+": Expected seq: "+ri(400,1800000));t+=0.001;
+      }
+    }
+    /* ---- 背景 flavor：奖励追踪/中继绑定/隐身循环/移动/武器查找/资源预载/伤害溢出（全部出自参考日志实测形状） ---- */
+    var trackIdx=0;
+    function trackerLine(){L(out,t,"Sys [Info]: received reward activity tracker from client "+names[(trackIdx%3)+1]+ICON+" for cache!");trackIdx++;t+=0.01;}
+    function natServer(){L(out,t,"Net [Info]: NAT bound for server to "+pubIP+":"+ri(10000,60000));t+=0.01;}
+    function natLine(){L(out,t,"Net [Info]: NAT bound for client to "+pubIP+":"+ri(10000,60000));t+=0.01;if(rnd()<0.15){L(out,t,"Net [Warning]: Retransmitting unacked NAT bind for client");t+=0.01;}}
+    function wispCycle(){var av=8+ri(0,3),pv=12+ri(0,5),tc=state.mode==="interception"?"/Lotus/Fx/PowersuitAbilities/Loki/CloakAltA":"/Lotus/Fx/PowersuitAbilities/Wisp/Cloak",pet=state.mode==="mirror"?"KubrowPetAvatar":"CatbrowPetAvatar",pc=state.mode==="mirror"?"/Lotus/Fx/PowersuitAbilities/Loki/Cloak":tc;
+      L(out,t,"Script [Info]: WispPassive.lua: ABLIB: ApplyInvis TennoAvatar"+av+" -- Active Cloak: None | Expected cloak"+tc+", was invis: false, isLocal: false");t+=0.01;
+      L(out,t,"Game [Info]: TennoAvatar"+av+" removing invis request from /Lotus/Powersuits/Wisp/WispPassive.lua");t+=0.01;
+      L(out,t,"Script [Info]: WispPassive.lua: ABLIB: RemoveInvis TennoAvatar"+av);t+=0.01;
+      if(rnd()<0.6){L(out,t,"Script [Info]: WispPassive.lua: ABLIB: ApplyInvis "+pet+pv+" -- Active Cloak: None | Expected cloak"+pc+", was invis: false, isLocal: false");t+=0.01;
+      L(out,t,"Game [Info]: "+pet+pv+" removing invis request from /Lotus/Powersuits/Wisp/WispPassive.lua");t+=0.01;
+      L(out,t,"Script [Info]: WispPassive.lua: ABLIB: RemoveInvis "+pet+pv);t+=0.01;}}
+    function moveBurst(){var n=ri(2,3);for(var mi=0;mi<n;mi++){L(out,t,pick(["Game [Info]: Moonwalk debug: TennoAvatar"+(8+ri(0,3))+" Setting PM_DODGE to true","Game [Info]: Moonwalk debug: TennoAvatar"+(8+ri(0,3))+" Setting PM_DODGE to false","Game [Info]: WallSlideController::ProcessAnimEvent TennoPlayerWallSlideController Setting PM_DODGE to false","Game [Info]: Avatar::ProcessRemoteActions TennoAvatar"+(8+ri(0,3))+" Setting PM_DODGE to true","Game [Info]: OperatorGhostGlaive::KillMe OperatorGrappleGlaiveProj Setting PM_DODGE to false","Game [Info]: LotusOperatorAvatar::GhostThrowRMI AdultOperatorAvatar"+(20+ri(0,3))+" Setting PM_DODGE to true","Game [Info]: LotusOperatorAvatar::UpdateThrowGhost AdultOperatorAvatar"+(20+ri(0,3))+" Setting PM_DODGE to false","Game [Info]: Moonwalk debug: AdultOperatorAvatar"+(20+ri(0,3))+" Setting PM_DODGE to true","Game [Info]: Moonwalk debug: AdultOperatorAvatar"+(20+ri(0,3))+" Setting PM_DODGE to false","Game [Info]: MotionController::DoDodgeRoll TennoMotion Setting PM_DODGE to true"]));t+=0.02;}}
+    function findWeapon(){fwFlip=1-fwFlip;L(out,t,"Sys [Info]: FindWeapon couldn't find weapon with ID "+FW_IDS[fwFlip]+"(LOT_OPERATOR_ADULT, SUIT_SLOT)");t+=0.01;}
+    function spotLoad(mir){L(out,t,"Sys [Info]: Spot-loading "+pick(["/Lotus/Types/DropTables/RailjackResourceShipyardsDropTable","/Lotus/Types/Sentinels/SentinelAbilities/RevengeAbility.lua"]));t+=0.01;if(rnd()<0.4){L(out,t,"Sys [Info]: Spot-loading took "+rf(0.5,9).toFixed(1)+"ms");t+=0.01;}}
+    function teleportFade(){var wp=ri(1,12);L(out,t,"Script [Info]: TeleportAndFade.lua: TeleportAndFade: 15a ElectricityElementalAmmoPickUp -> Vector("+rf(-40,80).toFixed(1)+", "+rf(40,70).toFixed(1)+", "+rf(10,120).toFixed(1)+")");t+=0.01;L(out,t,"Script [Info]: TeleportAndFade.lua: Script Teleport and Fade: ElectricityElementalAmmoPickUp to: /Layer1/Layer2/Waypoint"+wp);t+=0.01;}
+    function presenceTrio(){L(out,t,"Net [Info]: Redirecting presence queries to server id 0");t+=0.001;L(out,t,"Net [Info]: Redirecting presence queries to server id 0");t+=0.2;L(out,t,"Net [Info]: Received 2 / 2 online presence results");t+=0.01;L(out,t,"Net [Info]: Completed fast presence query");t+=0.05;}
+    function ccontrol(){var c=ri(1,3);L(out,t,"Net [Info]: CCONTROL "+c+" ("+ri(1,3)+") : need bps: "+rf(15000,22000).toFixed(1)+", bcs: WAIT, allocated: 81920, congest %: 8, throttle: 1.00, max bps="+rf(77000,79000).toFixed(1)+", slow start=0, bad client: 0, rtt: "+ri(100,160));t+=0.001;L(out,t,"Net [Info]: CCONTROL Total upstream: "+ri(25000,32000)+", max total upstream: 164488");t+=0.05;}
+    var DMG_W=["KuvaOgris","ZarimanTonfaWeapon","TennoCutlass","LotusModularPrimary","DarkSwordDaggerSingle","PrimeAfentisWeapon"];
+    function damageDrizzle(n){for(var di=0;di<n;di++){if(rnd()<0.08){L(out,t,"Game [Warning]: DamagePct exceeds limits on:VoidCloneSentinelAvatar"+ri(8,20)+" with:SentinelFreezeRayPrimeRifle reaching:"+rf(18,41).toFixed(4)+" of DT_EXPLOSION");t+=0.013;continue;}var w=haveKuva&&rnd()<0.75?"KuvaOgris":pick(DMG_W);L(out,t,"Game [Warning]: DamagePct exceeds limits on:TennoAvatar"+(8+ri(0,3))+" with:"+w+" reaching:"+rf(16,41).toFixed(4)+" of DT_"+(rnd()<0.9?"EXPLOSION":"FIRE"));t+=0.013;}if(haveKuva&&rnd()<0.06){L(out,t,"Game [Warning]: KuvaOgris Resolving projectile ids...");t+=0.001;L(out,t,"Game [Error]: KuvaOgris could not resolve projectile ids. Max limit has been reached!");t+=0.001;L(out,t,"Game [Error]: KuvaOgris : LingeringAoeKuvaOgrisProjectile projectile id is invalid.");t+=0.01;}}
+    function physSweep(){L(out,t,"Phys [Error]: Trying to sweep with zero distance!");t+=0.01;}
+    function transferPair(op){var nmT=pick(names),av=8+ri(0,3),tid=TID_T,br=BRK;var useOp=op||rnd()<0.4;var ak=useOp?(state.mode==="mirror"&&rnd()<0.7?"CombatOperatorAvatar":"AdultOperatorAvatar"):null;
+      if(ak){var aid=TID_O;L(out,t,"Game [Info]: "+nmT+ICON+" - new avatar: "+ak+av);t+=0.01;L(out,t,"Sys [Info]: "+ak+av+" with ID "+aid+" ["+br+"] has new player: "+nmT+ICON);t+=0.01;if(rnd()<0.5){L(out,t,"Sys [Info]: "+ak+av+" with ID "+aid+" new player=null, had "+nmT+ICON);t+=0.01;}return;}
+      L(out,t,"Game [Info]: "+nmT+ICON+" - new avatar: TennoAvatar"+av);t+=0.01;L(out,t,"Sys [Info]: TennoAvatar"+av+" with ID "+tid+" ["+br+"] has new player: "+nmT+ICON);t+=0.01;if(rnd()<0.5){L(out,t,"Sys [Info]: TennoAvatar"+av+" with ID "+tid+" new player=null, had "+nmT+ICON);t+=0.01;}}
+    function opCycle(){var combat=state.mode==="mirror"&&rnd()<0.7,op=combat?"CombatOperatorAvatar":"AdultOperatorAvatar",opc=(combat||state.mode==="mirror")?"/Lotus/Fx/PowersuitAbilities/Operator/CloakProj":OPCLOAK,av=20+ri(0,3),pv=12+ri(0,5),pool=[
+      "Script [Info]: OperatorGrappleGlaive.lua: ABLIB: RemoveInvis CatbrowPetAvatar"+pv,
+      "Script [Info]: OperatorGrappleGlaive.lua: ABLIB: ApplyInvis CatbrowPetAvatar"+pv+" -- Active Cloak: "+OPCLOAK+" | Expected cloak"+OPCLOAK+", was invis: false, isLocal: false",
+      "Script [Info]: OperatorVoidMode.lua: ABLIB: RemoveInvis CatbrowPetAvatar"+pv,
+      "Script [Info]: OperatorVoidMode.lua: ABLIB: ApplyInvis CatbrowPetAvatar"+pv+" -- Active Cloak: None | Expected cloak"+OPCLOAK+", was invis: false, isLocal: false",
+      "Game [Info]: CatbrowPetAvatar"+pv+" removing invis request from /Lotus/Scripts/OperatorVoidMode.lua",
+      "Script [Info]: OperatorGrappleGlaive.lua: ABLIB: RemoveInvis "+op+av,
+      "Script [Info]: OperatorGrappleGlaive.lua: ABLIB: ApplyInvis "+op+av+" -- Active Cloak: "+opc+" | Expected cloak"+opc+", was invis: false, isLocal: false",
+      "Script [Info]: OperatorVoidMode.lua: ABLIB: RemoveInvis "+op+av,
+      "Script [Info]: OperatorVoidMode.lua: ABLIB: ApplyInvis "+op+av+" -- Active Cloak: None | Expected cloak"+opc+", was invis: false, isLocal: false",
+      "Game [Info]: "+op+av+" removing invis request from /Lotus/Scripts/OperatorVoidMode.lua",
+      "Script [Info]: OperatorTransference.lua: ABLIB: RemoveInvis "+op+av,
+      "Game [Info]: "+op+av+" removing invis request from /Lotus/Powersuits/PowersuitAbilities/OperatorTransference.lua"];
+      if(state.mode==="mirror"){pool.push("Script [Info]: OperatorTransference.lua: ABLIB: RemoveInvis KubrowPetAvatar"+pv,"Game [Info]: KubrowPetAvatar"+pv+" removing invis request from /Lotus/Powersuits/PowersuitAbilities/OperatorTransference.lua","Script [Info]: OperatorTransference.lua: ABLIB: ApplyInvis KubrowPetAvatar"+pv+" -- Active Cloak: None | Expected cloak/Lotus/Fx/PowersuitAbilities/Loki/Cloak, was invis: false, isLocal: false");}
+      for(var oi=0;oi<3;oi++){L(out,t,pick(pool));t+=0.01;}}
+    function bridges(){for(var bi3=0;bi3<3;bi3++){L(out,t,pick(["Sys [Info]: Cleaning up bridges","Sys [Info]: Finished new region","Sys [Info]: Out with the old, in with the new","Sys [Info]: Did not have previous creator Avatar","Sys [Info]: Waiting for PowerSuit replication","Sys [Info]: Non-Player Sentinel","Sys [Info]: Non-Player Sentinel, using default player loadout","Sys [Info]: SentinelAvatar: registering VoidCloneCatbrowPetAvatar"+ri(20,90)]));t+=0.02;}}
+    function evolvingSwf(){L(out,t,"Sys [Info]: Created /Lotus/Interface/SpecialReticles/EvolvingGun.swf");t+=0.02;L(out,t,"Sys [Info]: Created /Lotus/Interface/SpecialReticles/EvolvingMelee.swf");t+=0.03;}
+    function netStats(){var ch=ri(1,3);L(out,t,"Net [Info]: "+ch+": Retransmit throttle: 1.05, threshold: "+rf(0.2,1.8).toFixed(5)+"s, last received packet: "+rf(0.005,0.25).toFixed(6)+"s ago");t+=0.001;L(out,t,"Net [Info]: "+ch+": Pending reliable messages, channel 30: "+ri(30,140));t+=0.001;L(out,t,"Net [Info]: "+ch+": Lost packets: "+ri(20,320)+", acked packets: "+ri(8000,120000));t+=0.001;L(out,t,"Net [Info]: "+ch+": Ping: "+ri(50,200));t+=0.001;if(state.mode!=="mirror"&&rnd()<0.6){L(out,t,"Net [Info]: "+ch+": Queued reliable: 0");t+=0.001;}L(out,t,"Net [Info]: "+ch+": Expected seq: "+ri(400,1800000));t+=0.01;}
+    function transmissionPair(){L(out,t,"Script [Info]: Transmission.lua: USE SLOW UPDATE TOUCH BUTTONS\tfalse");t+=0.01;L(out,t,"Sys [Info]: Created /Lotus/Interface/Transmission.swf");t+=0.01;}
+    function survivalReward(){L(out,t,"Sys [Info]: Created /Lotus/Interface/SurvivalReward.swf");t+=0.1;}
+    function setCallbacks(n){var cs=["Rewards.Element.Btn"];for(var ci=2;ci<=n;ci++)cs.push("Rewards.Element"+ci+".Btn");cs.forEach(function(c){L(out,t,"Sys [Error]: SetCallbacks on unknown clip: '"+c+"', movie: '/Lotus/Interface/DefenseReward.swf'");t+=0.001;});}
+    function missing19(){for(var mk=0;mk<19;mk++){L(out,t,"Script [Info]: EndOfMatch.lua: Missing icon data!");t+=0.001;}}
+    function createdEOM(){L(out,t,"Sys [Info]: Created /Lotus/Interface/EndOfMatch.swf");t+=0.01;L(out,t,"Script [Info]: EndOfMatch.lua: Auto close delay=10");t+=0.05;}
+    function drip(){
+      var fr=rnd(),md=state.mode;
+      if(md==="defense"){if(fr<0.20)damageDrizzle(1);else if(fr<0.222)trackerLine();else if(fr<0.228)natLine();}
+      else if(md==="interception"){if(fr<0.026)trackerLine();else if(fr<0.037)wispCycle();else if(fr<0.048)moveBurst();else if(fr<0.053)natLine();else if(fr<0.056)natServer();else if(fr<0.06)findWeapon();else if(fr<0.066)spotLoad(false);else if(fr<0.069)teleportFade();else if(fr<0.072)damageDrizzle(1);else if(fr<0.09)opCycle();else if(fr<0.093)transferPair(false);else if(fr<0.0935){L(out,t,"Net [Warning]: No action!");t+=0.01;}}
+      else{if(fr<0.026)trackerLine();else if(fr<0.037)wispCycle();else if(fr<0.05)physSweep();else if(fr<0.054)natLine();else if(fr<0.057)natServer();else if(fr<0.065)transferPair(false);else if(fr<0.088)opCycle();else if(fr<0.093)moveBurst();else if(fr<0.096)bridges();}
+    }
+    /* 中段轮结算（终局轮走 finalBlock，不经过这里） */
+    function continueBlock(){
+      var base2=t;
+      if(state.mode==="mirror"){
+        L(out,base2,"Game [Info]: Received request to open continue mission screen.");base2+=0.05;
+        L(out,base2,"Script [Info]: LoopDefend.lua: waiting for continue...");base2+=0.05;
+        L(out,base2,"Script [Info]: OverlayBackground.lua: DBG: HudVis 2");base2+=0.5;
+      }
+      L(out,base2,"Game [Info]: Sending continue dialogue to host with answer 1.");base2+=0.05;
+      var order=[1,3,2,0];
+      order.forEach(function(p,ix){
+        L(out,base2+0.1+ix*0.25,"Game [Info]: Received continue response from player "+p+" wants to continue? 1.");
+      });
+      L(out,base2+1.0,"Game [Info]: Got 4 responses!.");
+      L(out,base2+1.0,"Game [Info]: Notifying clients to close the screen.");
+      L(out,base2+1.0,"Game [Info]: Received request to close continue mission screen.");
+      L(out,base2+1.0,"Game [Info]: 4 player(s) want to continue. 0 player(s) want to cancel.");
+      L(out,base2+1.0,"Game [Info]: Host wants to continue.");
+      L(out,base2+1.05,"Game [Info]: Everyone wants to continue playing!.");
+      if(state.mode==="mirror"){L(out,base2+1.1,"Script [Info]: LoopDefend.lua: waited for continue.");}
+      if(state.mode==="defense")L(out,base2+1.06,"Script [Info]: WaveDefend.lua: hostContinuing: true");
+      L(out,base2+1.2,"Script [Info]: DefenseReward.lua: DefenseReward::TransitionOut");
+      transTimes.push(base2+1.2);
+      if(state.mode==="defense"){
+        L(out,base2+1.25,"Game [Info]: GetQueuedTransmission returns: /Lotus/Sounds/Lotus/CorpusOutpost/Defense/LotusDefenseGameStayTrans");
+        L(out,base2+1.26,"Script [Info]: HudRedux.lua: Queuing new transmission: LotusDefenseGameStayTrans");
+        L(out,base2+1.27,"Script [Info]: HudRedux.lua: Queued a transmission from Hud: /Lotus/Sounds/Lotus/CorpusOutpost/Defense/LotusDefenseGameStayTrans");
+        L(out,base2+1.30,"Script [Info]: Transmission.lua: USE SLOW UPDATE TOUCH BUTTONS\tfalse");
+        L(out,base2+1.31,"Sys [Info]: Created /Lotus/Interface/Transmission.swf");
+        L(out,base2+1.35,"Script [Info]: ProjectionsCountdown.lua: Relic timer closed");
+      }
+      if(state.mode!=="defense"){L(out,base2+1.35,"Script [Info]: ProjectionsCountdown.lua: Relic timer closed");}
+      t=base2+rf(1.5,2.5);
+      L(out,t,"Script [Info]: DefenseReward.lua: ScopeDebug: Show from DefenseReward");t+=0.01;
+      L(out,t,"Script [Info]: DefenseReward.lua: DBG: HudVis 1");t+=rf(1,2);
+    }
+    /* 终局取消对话（defense/int 实测：answer 0 + Everyone wants to cancel） */
+    function cancelDlg(kind){
+      var base2=t;
+      L(out,base2,"Game [Info]: Sending continue dialogue to host with answer 0.");base2+=0.05;
+      var seq=kind==="def"?[0,3,2,1]:[0,1,3];
+      seq.forEach(function(p,ix){
+        L(out,base2+0.1+ix*0.5,"Game [Info]: Received continue response from player "+p+" wants to continue? 0.");
+      });
+      var te=base2+0.1+seq.length*0.5;
+      L(out,te,"Game [Info]: Got 4 responses!.");
+      if(kind==="def"){
+        L(out,te,"Game [Info]: Notifying clients to close the screen.");
+        L(out,te,"Game [Info]: Received request to close continue mission screen.");
+        L(out,te,"Game [Info]: 0 player(s) want to continue. 4 player(s) want to cancel.");
+        L(out,te,"Game [Info]: Host doesn't want to continue.");
+      }
+      L(out,te,"Game [Info]: Everyone wants to cancel!.");
+      L(out,te+0.02,"Script [Info]: EndOfMatch.lua: Initialize");
+      t=te+0.05;
+    }
+    /* 终局轮：各模式 success 收尾（实测顺序） */
+    function finalBlock(){
+      if(state.mode==="defense"){
+        eomBurst(false);
+        cancelDlg("def");
+        commitPrelude(false);
+        missing19();createdEOM();
+        L(out,t,"Script [Info]: WaveDefend.lua: hostContinuing: false");t+=0.01;
+        L(out,t,"Script [Info]: WaveDefend.lua: _SleepBetweenWaves(3)");t+=0.01;
+        L(out,t,"Script [Info]: DefenseReward.lua: DefenseReward::TransitionOut");transTimes.push(t);t+=0.01;
+        L(out,t,"Script [Info]: HudRedux.lua: DBG: HudVis 4");t+=rf(1.5,2.5);
+      }else if(state.mode==="mirror"){
+        L(out,t,"Script [Info]: LoopDefend.lua: waited for continue.");t+=0.1;
+        commitPrelude(false);
+        missing19();createdEOM();
+        L(out,t,"Script [Info]: DefenseReward.lua: DefenseReward::TransitionOut");transTimes.push(t);t+=0.01;
+        L(out,t,"Script [Info]: HudRedux.lua: DBG: HudVis 4");t+=rf(1.5,2.5);
+      }else{
+        cancelDlg("int");
+        commitPrelude(true);
+        missing19();createdEOM();
+        L(out,t,"Script [Info]: DefenseReward.lua: DefenseReward::TransitionOut");transTimes.push(t);t+=0.01;
+        L(out,t,"Script [Info]: HudRedux.lua: DBG: HudVis 4");t+=rf(1.5,2.5);
+      }
+    }
+    /* 终局成功播报（trans 之后，收尾段 emit） */
+    function successFlow(){
+      if(state.mode==="defense")return; /* 防御终局无成功播报行 */
+      var path=state.mode==="mirror"?"/Lotus/Sounds/Lotus/VersionB/MissionCompleteDefendTrans":"/Lotus/Sounds/Dialog/GenericMissions/InterceptionMissionSuccess/MissionCompleteTerritoryTrans";
+      var tot=state.mode==="mirror"?75:74, ok=71;
+      L(out,t,"Script [Info]: ProjectionsCountdown.lua: Relic timer closed");t+=0.01;
+      L(out,t,"Script [Info]: DefenseReward.lua: ScopeDebug: Show from DefenseReward");t+=0.01;
+      L(out,t,"Script [Info]: DefenseReward.lua: DBG: HudVis 3");t+=0.05;
+      L(out,t,"Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /Lotus/Types/Player/TennoInputFilter");t+=0.01;
+      L(out,t,"Input [Info]: Subscribing for /Lotus/Interface/ChatRedux.swf with input filter /EE/Types/Input/MenuInputFilter");t+=0.01;
+      L(out,t,"Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /EE/Types/Input/MenuInputFilter");t+=0.05;
+      L(out,t,"Script [Info]: OverlayBackground.lua: DBG: HudVis 2");t+=0.2;
+      L(out,t,"Sys [Info]: ResourceLoader 0x00000"+hex(11)+" ("+path+") Found "+tot+" items to load (0ms) [Heap: 1,100,753,680/1,112,014,848 Footprint: 4,714,434,560 Handles: 1,628]");t+=0.01;
+      L(out,t,"Sys [Info]: 1 unique static loader(s) running");t+=0.01;
+      L(out,t,"Sys [Info]: Resloader 0x00000"+hex(11)+" ("+path+") starting");t+=0.05;
+      L(out,t,"Sys [Info]: Resource load completed 0x00000"+hex(11)+" ("+path+") in one pass and 0.0s (I/O ~= 2.7%, inherited "+ok+" of "+tot+")");t+=0.01;
+      var tn=path.split("/").pop();
+      L(out,t,"Game [Info]: GetQueuedTransmission returns: "+path);t+=0.01;
+      L(out,t,"Script [Info]: HudRedux.lua: Queuing new transmission: "+tn);t+=0.01;
+      L(out,t,"Script [Info]: HudRedux.lua: Queued a transmission from Hud: "+path);t+=0.01;
+      L(out,t,"Script [Info]: Transmission.lua: Updated pulled nextQueued: "+path);t+=0.05;
+      L(out,t,"Net [Info]: Redirecting presence queries to server id 0");t+=0.001;
+      L(out,t,"Net [Info]: Redirecting presence queries to server id 0");t+=0.2;
+      L(out,t,"Sys [Info]: Created /Lotus/Interface/Notifications.swf");t+=0.05;
+      L(out,t,"Input [Info]: Subscribing for /Lotus/Interface/EndOfMatch.swf with input filter /Lotus/Interface/EndOfMatchInputFilter");t+=0.01;
+      L(out,t,"Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter /Lotus/Interface/EndOfMatchInputFilter");t+=0.05;
+      missing19();
+    }
+    function eomBurst(full){
+      L(out,t,"Script [Info]: EndOfMatch.lua: Initialize");t+=0.001;
+      L(out,t,"Script [Info]: EndOfMatch.lua: DBG: HudVis 1");t+=0.001;
+      if(full){L(out,t,"Sys [Error]: SetFrameCallback on unknown clip: 'MissionComplete.TextAnim', movie: '/Lotus/Interface/EndOfMatch.swf'");t+=0.001;
+      L(out,t,"Sys [Error]: SetFrameCallback on unknown clip: 'MissionComplete.ArrowEndsAnim.ArrowEnds', movie: '/Lotus/Interface/EndOfMatch.swf'");t+=0.001;}
+      L(out,t,"Script [Info]: EndOfMatch.lua: Mission Succeeded");t+=0.001;
+      L(out,t,"Script [Info]: EndOfMatch.lua: GiveMissionRewards. success=true");t+=0.001;
+      L(out,t,"Script [Info]: EndOfMatch.lua: Connected: true");t+=0.001;
+      L(out,t,"Script [Info]: EndOfMatch.lua: extractionTrigger is nil! Assuming that all players are touching by default.");t+=0.001;
+      names.forEach(function(nm){L(out,t,"Script [Info]: EndOfMatch.lua: "+nm+ICON+" - IsInTrigger=true");t+=0.001;});
+      L(out,t,"Script [Info]: EndOfMatch.lua: GetMissionCompleteCreditBonus: 0");t+=0.01;
+      for(var k=0;k<19;k++){L(out,t,"Script [Info]: EndOfMatch.lua: Missing icon data!");t+=0.001;}
+      L(out,t,"Script [Info]: EndOfMatch.lua: DBG: HudVis 0");t+=rf(0.3,1.2);
+    }
+    function fwLine(slot){L(out,t,"Sys [Info]: FindWeapon couldn't find weapon with ID "+hex(24).toLowerCase()+"("+slot+")");t+=0.001;}
+    /* 终局 inventory-commit 前奏（实测：FindWeapon 族 + 公会/经验/存档行，结算前 0.05s 内） */
+    function commitPrelude(full){
+      if(full){
+        ["LOT_OPERATOR_ADULT, SUIT_SLOT","LOT_OPERATOR_ADULT, LONG_GUN_SLOT","LOT_OPERATOR_ADULT, MELEE_SLOT","LOT_DRIFTER, MELEE_SLOT"].forEach(fwLine);
+      }
+      L(out,t,"Game [Info]: CommitInventoryChangesToDB");t+=0.001;
+      L(out,t,"Sys [Info]: EOM missionLocationUnlocked=1");t+=0.001;
+      if(full){
+        ["LOT_OPERATOR, SUIT_SLOT","LOT_NORMAL, SPECIAL_A_SLOT","LOT_KDRIVE, PISTOL_SLOT","LOT_MECH, SUIT_SLOT","LOT_MECH, HEAVY_GUN_SLOT","LOT_MECH, SPECIAL_A_SLOT"].forEach(fwLine);
+        L(out,t,"Game [Info]: Intrinsic Skills already maxed out");t+=0.001;
+        L(out,t,"Sys [Info]: SerializeGuildVaultBonusInfo: "+hex(27).toLowerCase());t+=0.001;
+        L(out,t,"Sys [Info]: "+names[0]+ICON+" ignored (is local: 1)");t+=0.001;
+        L(out,t,"Sys [Info]: "+names[1]+ICON+" matches guild");t+=0.001;
+        L(out,t,"Sys [Info]: "+names[2]+ICON+" matches guild");t+=0.001;
+        L(out,t,"Sys [Info]: "+names[3]+ICON+" ignored (is local: 0)");t+=0.001;
+        L(out,t,"Sys [Info]: SyndicateXP base for mission: "+ri(300000,650000));t+=0.001;
+        L(out,t,"Sys [Info]: SyndicateXP post multiplier: "+ri(300000,650000));t+=0.001;
+        L(out,t,"Sys [Info]: SyndicateXP post checkpoint amount: "+ri(300000,650000));t+=0.001;
+        L(out,t,"Sys [Info]: SyndicateXP post pending checkpoint amount: "+ri(300000,650000));t+=0.001;
+        L(out,t,"Sys [Info]: Reward Qualifications: 1111111111");t+=0.001;
+        L(out,t,"Sys [Info]: Purgatory Reward Qualifications: ");t+=0.001;
+        L(out,t,"Sys [Info]: PlayerProfileCommon::SaveProfile()");t+=0.001;
+        L(out,t,"Sys [Info]: Profile hash on write: "+hex(32));t+=0.001;
+        L(out,t,"Sys [Info]: Committing "+names[0]+ICON+"'s inventory to DB");t+=0.001;
+        ["LOT_NORMAL, SPECIAL_A_SLOT","LOT_MECH, SUIT_SLOT","LOT_MECH, HEAVY_GUN_SLOT","LOT_MECH, SPECIAL_A_SLOT"].forEach(fwLine);
+        ["/Lotus/Scripts/Mods/AuraBloodLetter.lua","/Lotus/Types/Sentinels/SentinelAbilities/Guardian.lua","/Lotus/Types/Sentinels/SentinelAbilities/WarriorAbility.lua","/Lotus/Scripts/Mods/MissionSpecificResistance.lua"].forEach(function(p){L(out,t,"Sys [Info]: Spot-loading "+p);t+=0.002;});
+      }else{
+        L(out,t,"Sys [Info]: PlayerProfileCommon::SaveProfile()");t+=0.001;
+        L(out,t,"Sys [Info]: Profile hash on write: "+hex(32));t+=0.001;
+        L(out,t,"Sys [Info]: Committing "+names[0]+ICON+"'s inventory to DB");t+=0.001;
+      }
+    }
+
+    var waveNo=0,roundT;
+    var chain=Promise.resolve();
+    function roundJob(r){
+      return new Promise(function(res){
+        setTimeout(function(){
+          var isLast=(r===N-1),profile=roundProfile[r];
+          curRoundIdx=r;
+          roundT=cfg.roundSec*profile.durationFactor;
+          var dCount=profile.drones,vCount=profile.valid;
+          var base=step; /* 本轮无人机槽位按轮内偏移寻址 */
+          curRoundBase=base;
+          var emitted=0; /* 本轮已发射怪数（精确封顶用） */
+          var dIdx={},dk=0;
+          var late0=(state.mode==="interception"&&r===0&&dCount>2);
+          var lo=0, dtgt=dCount;
+          if(late0){lo=Math.max(12,Math.floor(vCount*0.45));if(vCount-lo<dCount-2)lo=Math.max(0,vCount-(dCount-2)-1);dtgt=dCount-2;}
+          var bLen=(!late0&&dCount>15&&rnd()<profile.burst)?ri(6,Math.min(18,Math.floor(dCount/3))):0, bStart=0;
+          if(bLen){bStart=ri(lo,Math.max(lo,vCount-bLen));if(bStart+bLen>vCount)bStart=Math.max(lo,vCount-bLen);for(var bbi=bStart;bbi<bStart+bLen;bbi++){dIdx[bbi]=1;dk++;}}
+          while(dk<dtgt){var pos=ri(lo,vCount-1);if(!dIdx[pos]){dIdx[pos]=1;dk++;}}
+          function isBurst(){var p=step-base;return bLen>0&&p>=bStart&&p<bStart+bLen;}
+          rejoins.filter(function(q){return !q.done&&q.at*N<=r+1;}).forEach(function(q){q.done=true;var nid=state.mode==="mirror"?(nextId++):q.pid;L(out,t,"Net [Info]: AddSquadMember: "+names[q.pid]+ICON+", mm="+hex(24)+", squadCount="+q.cnt);t+=0.3;L(out,t,"Game [Info]: CreatePlayerForClient. id="+nid+", user name="+names[q.pid]+ICON);t+=0.5;});
+          if(state.mode==="defense"){
+            var waves=cfg.wavesPerRound,perW=Math.floor(vCount/waves),rw=vCount-perW*waves;
+            for(var w=0;w<waves;w++){
+              waveNo++;lvl+=2;
+              var b=waveBudget(waveNo);
+              var wDur=roundT/waves;
+              L(out,t,"Script [Info]: WaveDefend.lua: Defense wave: "+waveNo);t+=0.001;
+              L(out,t,"Script [Info]: WaveDefend.lua: Starting wave "+waveNo+", spawning a total of "+b.total+" tier-"+b.tier+" enemies (29 simultaneous, "+b.exi+"% chance of eximus)");t+=0.001;
+              L(out,t,"Script [Info]: WaveDefend.lua: Eximus Rush parameters: last 25% of the wave = "+Math.max(4,Math.floor(b.total/4)-(rnd()<0.4?1:0))+" enemies, with a chance of 20% to spawn as eximus");t+=0.01;
+              var cnt=perW+(w===waves-1?rw:0);
+              function exiSfx(){return rnd()<b.exi/100?(rnd()<0.15?" EXIMUS EXIMUS":" EXIMUS"):"";}
+              var waveEnemyNo=0;
+              for(var e=0;e<cnt;e++){
+                var droneSlot=!!dIdx[step-base],pr2=pick(POOL);
+                if(!droneSlot){
+                  waveEnemyNo++;
+                  L(out,t,"Script [Info]: WaveDefend.lua: Next spawn (enemy #"+waveEnemyNo+", attempt #1, spawnTable["+ri(1,47)+"]): L"+lvl+" "+pr2[0]+exiSfx());t+=0.01;
+                  L(out,t,"Script [Info]: WaveDefend.lua: Spawned a /Npc/"+pr2[1]+agentIdx+" @ Vector("+rf(-35,85).toFixed(4)+", "+rf(48,70).toFixed(4)+", "+rf(10,125).toFixed(4)+"), spawn point: /Layer1/Layer2/NpcSpawnPoint"+ri(2,165)+" @ Vector("+rf(-35,85).toFixed(4)+", "+rf(48,70).toFixed(4)+", "+rf(10,125).toFixed(4)+"), total spawned in current wave: "+waveEnemyNo);t+=0.01;
+                }
+                agentLine(droneSlot);step++;
+                t=advance(t,isBurst()?rf(0.08,0.25):(wDur/Math.max(1,cnt)*rf(0.7,1.3)));
+                if(rnd()<0.06)retransmit(),t+=0.05;
+                if(rnd()<0.15)netStats();
+              }
+              if(rnd()<0.85){var burst=Math.min(120,ri(8,20)+Math.round(b.total*0.5));for(var bi=0;bi<burst;bi++){var pb=pick(POOL);var ex2=rnd()<0.3?exiSfx():"";L(out,t,"Script [Info]: WaveDefend.lua: Next spawn (enemy #"+(waveEnemyNo+1)+", attempt #"+(bi+1)+", spawnTable["+ri(1,47)+"]): L"+lvl+" "+pb[0]+ex2);t+=0.001;L(out,t,"Script [Info]: WaveDefend.lua: Could not spawn L"+lvl+" "+pb[0]+ex2);t+=0.001;}L(out,t,"Script [Info]: WaveDefend.lua: Nothing from the spawn table could be spawned!");t+=0.01;}
+              L(out,t,"Script [Info]: WaveDefend.lua: SpawnLoopDone (2)");t+=0.01;
+              L(out,t,"Script [Info]: WaveDefend.lua: Entering main defense loop");t+=1;
+              L(out,t,"Script [Info]: WaveDefend.lua: WaveDefend: num enemies left 0");t+=0.01;
+              L(out,t,"Script [Info]: WaveDefend.lua: _SleepBetweenWaves(3)");t+=rf(2,4);
+              if(profile.pauseSpike&&w===waves-1){t+=rf(7,18);}
+              if(rnd()<0.7)survivalReward();
+            }
+            if(isLast){finalBlock();}
+            else{
+              L(out,t,"Sys [Info]: Created /Lotus/Interface/SurvivalReward.swf");t+=rf(0.5,1.2);
+              L(out,t,"Sys [Info]: Created /Lotus/Interface/DefenseReward.swf");t+=0.05;setCallbacks(6);
+              continueBlock();
+              t+=rf(1,3);
+            }
+          }else if(state.mode==="interception"){
+            if(r===0&&dCount>2){for(var od=0;od<2;od++){var olv=ri(14,18);L(out,t,"AI [Info]: OnAgentCreated /Npc/CorpusEliteShieldDroneAgent"+agentIdx+" Live "+olv+" Spawned "+spawned+" Ticking "+(olv-ri(2,4))+" Paused 4 IgnoredTicking "+ri(0,2)+" MonitoredTicking "+ri(10,14)+" AllyLive 4 AllyActive "+ri(0,1)+" NeutralActive "+ri(0,2));agentIdx++;droneIdx++;t+=rf(0.5,1.5);}t+=0.5;}
+            var seg=8+ri(0,3),emitted=0;
+            var segBudget=(roundT-25)/seg;
+            for(var s=0;s<seg;s++){
+              var ev=pick([
+                "Script [Info]: TerritoryMission.lua: High priority time",
+                "Script [Info]: TerritoryMission.lua: High priority time ended",
+                "Script [Info]: TerritoryMission.lua: Going for nearby objective",
+                "Script [Info]: TerritoryMission.lua: "+pick(["A","B","C","D"])+" 点 has is now under Enemy control",
+                "Script [Info]: TerritoryMission.lua: "+pick(["A","B","C","D"])+" 点 is now under Tenno control"
+              ]);
+              L(out,t,ev);
+              if(ev.indexOf("under Enemy control")>-1){t+=0.04;L(out,t,"Script [Info]: HudRedux.lua: Queuing new transmission: InterTowerCapturedLotusTransmission");t+=0.01;L(out,t,"Script [Info]: HudRedux.lua: Queued a transmission from Hud: /Lotus/Sounds/Dialog/GenericMissions/InterceptionTowerCaptured/InterTowerCapturedLotusTransmission");t+=0.01;transmissionPair();}
+              if(ev.indexOf("under Tenno control")>-1){t+=0.04;L(out,t,"Script [Info]: HudRedux.lua: Queuing new transmission: InterTowerLostLotusTransmission");t+=0.01;L(out,t,"Script [Info]: HudRedux.lua: Queued a transmission from Hud: /Lotus/Sounds/Dialog/GenericMissions/InterceptionTowerLost/InterTowerLostLotusTransmission");t+=0.01;transmissionPair();}
+              var on2=ri(2,5);for(var oi2=0;oi2<on2;oi2++){L(out,t,"Script [Info]: TerritoryMission.lua: Not enough agents were spawned to create a squad, orphaning "+ri(1,3)+" agents");t+=0.03;}
+              if(profile.pauseSpike&&s===Math.floor(seg/2)){L(out,t,"Script [Info]: TerritoryMission.lua: High priority time ended");t+=rf(8,20);}
+              var perSeg=Math.ceil((vCount-emitted)/(seg-s));
+              var stepT=Math.max(0.05,(segBudget-1.5)/Math.max(1,perSeg));
+              for(var q=0;q<perSeg&&emitted<vCount&&step<V;q++){
+                agentLine(!!dIdx[step-base]);step++;emitted++;
+                t=advance(t,isBurst()?rf(0.08,0.25):(stepT*rf(0.6,1.4)));
+              }
+              if(rnd()<0.5){netStats();}
+              if(rnd()<0.3){survivalReward();survivalReward();}
+              t+=0.05;
+            }
+            while(step<perValid.slice(0,r+1).reduce(function(a,b){return a+b;},0)){agentLine(!!dIdx[step-base]);step++;t=advance(t,0.4);}
+            if(r===0){L(out,t,"Script [Info]: HudRedux.lua: Queuing new transmission: DBattleBeginsOperatorVoiceC");t+=0.01;
+            L(out,t,"Script [Info]: HudRedux.lua: Queued a transmission from Hud: /Lotus/Sounds/Dialog/OperatorMission/BattleBegins/DBattleBeginsOperatorVoiceC");t+=0.2;transmissionPair();}
+            if(rnd()<0.4){L(out,t,"Game [Info]: DecoyCatbrowNPCAvatar"+ri(20,90)+" was killed by "+ri(15,40)+" / "+ri(25,60)+" damage from a level "+(lvl+ri(0,4))+" EliteRifleLancerAvatar"+ri(10,60)+" using a AIGrnBurstRifle");t+=0.5;}
+            if(isLast){L(out,t,"Script [Info]: HudRedux.lua: Queuing new transmission: DBattleConcludedOperatorVoiceC");t+=0.01;
+            L(out,t,"Script [Info]: HudRedux.lua: Queued a transmission from Hud: /Lotus/Sounds/Dialog/OperatorMission/BattleConcluded/DBattleConcludedOperatorVoiceC");t+=0.2;transmissionPair();}
+            L(out,t,"Script [Info]: HudRedux.lua: Queuing new transmission: InterExterminateLotusTransmission");t+=0.01;
+            L(out,t,"Script [Info]: HudRedux.lua: Queued a transmission from Hud: /Lotus/Sounds/Dialog/GenericMissions/InterceptionExterminate/InterExterminateLotusTransmission");t+=0.01;transmissionPair();t+=0.2;
+            survivalReward();
+            eomBurst(true);eomBurst(true);eomBurst(true);
+            L(out,t,"Script [Info]: TerritoryMission.lua: Players won - rewarding items");t+=0.05;
+            L(out,t,"Script [Info]: HudRedux.lua: Queuing new transmission: InterClaimScreenLotusTransmission");t+=0.01;
+            L(out,t,"Script [Info]: HudRedux.lua: Queued a transmission from Hud: /Lotus/Sounds/Dialog/GenericMissions/InterceptionClaimScreen/InterClaimScreenLotusTransmission");t+=0.01;
+            L(out,t,"Sys [Info]: ResourceLoader 0x00000"+hex(11)+" (/Lotus/Sounds/Dialog/GenericMissions/InterceptionClaimScreen/InterClaimScreenLotusTransmission) Found 247 items to load (0ms) [Heap: 1,026,794,99"+ri(1000000,9999999)+"/1,042,546,688 Footprint: 4,407,259,136 Handles: 1,"+ri(620,640)+"]");t+=0.01;
+            L(out,t,"Sys [Info]: 1 unique static loader(s) running");t+=0.01;
+            L(out,t,"Sys [Info]: Resloader 0x00000"+hex(11)+" (/Lotus/Sounds/Dialog/GenericMissions/InterceptionClaimScreen/InterClaimScreenLotusTransmission) starting");t+=0.05;
+            L(out,t,"Sys [Info]: Resource load completed 0x00000"+hex(11)+" (/Lotus/Sounds/Dialog/GenericMissions/InterceptionClaimScreen/InterClaimScreenLotusTransmission) in one pass and 0.0s (I/O ~= 0.0%, inherited 243 of 247)");t+=0.01;transmissionPair();t+=0.3;
+            L(out,t,"Sys [Info]: Created /Lotus/Interface/DefenseReward.swf");t+=0.05;setCallbacks(isLast?6:5);
+            L(out,t,"Script [Info]: HudRedux.lua: Queuing new transmission: InterNewRoundLotusTransmission");t+=0.05;
+            var rlN=r===0?247:134,rlOk=r===0?243:133;
+            L(out,t,"Sys [Info]: ResourceLoader 0x00000"+hex(11)+" (/Lotus/Sounds/Dialog/GenericMissions/InterceptionNewRound/InterNewRoundLotusTransmission) Found "+rlN+" items to load (0ms) [Heap: 1,023,957,264/1,042,546,688 Footprint: 4,405,207,040 Handles: 1,628]");t+=0.01;
+            L(out,t,"Sys [Info]: 1 unique static loader(s) running");t+=0.01;
+            if(rnd()<0.3){L(out,t,"Sys [Info]: 2 unique static loader(s) running");t+=0.01;}
+            L(out,t,"Sys [Info]: Resloader 0x00000"+hex(11)+" (/Lotus/Sounds/Dialog/GenericMissions/InterceptionNewRound/InterNewRoundLotusTransmission) starting");t+=0.05;
+            L(out,t,"Sys [Info]: Resource load completed 0x00000"+hex(11)+" (/Lotus/Sounds/Dialog/GenericMissions/InterceptionNewRound/InterNewRoundLotusTransmission) in one pass and 0.1s (I/O ~= 0.1%, inherited "+rlOk+" of "+rlN+")");t+=0.01;
+            transmissionPair();
+            L(out,t,"Script [Info]: HudRedux.lua: Queued a transmission from Hud: /Lotus/Sounds/Dialog/GenericMissions/InterceptionNewRound/InterNewRoundLotusTransmission");t+=0.01;
+            L(out,t,"Script [Info]: Transmission.lua: Updated pulled nextQueued: /Lotus/Sounds/Dialog/GenericMissions/InterceptionNewRound/InterNewRoundLotusTransmission");t+=0.15;
+            if(isLast){finalBlock();}else{continueBlock();}
+            t+=rf(2,5);
+          }else{
+            /* 镜像防御：按任务级环波计划推进（编号游走，波次按递增段计数） */
+            var waves=lwPlan[r];
+            for(var lwi=0;lwi<waves.length;lwi++){var lw=waves[lwi];
+              L(out,t,"Script [Info]: LoopDefend.lua: Scheduling simulated damage");t+=0.01;
+              L(out,t,"Script [Info]: LoopDefend.lua: Loop Defense wave: "+lw);t+=0.01;
+              var cit=lwi===0?"DCitGnrWvOne0510Tyl":"DCitFrstCrpStrt0550Lotus";
+              L(out,t,"Script [Info]: HudRedux.lua: Queuing new transmission: "+cit);t+=0.01;
+              L(out,t,"Script [Info]: HudRedux.lua: Queued a transmission from Hud: /Lotus/Sounds/Dialog/CitrineLWDefenseMode/"+cit);t+=0.19;transmissionPair();
+              L(out,t,"Sys [Info]: ResourceLoader 0x00000"+hex(11)+" (/Lotus/Sounds/Dialog/CitrineLWDefenseMode/"+cit+") Found 191 items to load (0ms) [Heap: 1,300,792,944/1,313,996,800 Footprint: 5,187,596,288 Handles: 1,509]");t+=0.01;
+              L(out,t,"Sys [Info]: 1 unique static loader(s) running");t+=0.01;
+              if(rnd()<0.3){L(out,t,"Sys [Info]: 2 unique static loader(s) running");t+=0.01;}
+              L(out,t,"Sys [Info]: Resloader 0x00000"+hex(11)+" (/Lotus/Sounds/Dialog/CitrineLWDefenseMode/"+cit+") starting");t+=0.05;
+              L(out,t,"Sys [Info]: Resource load completed 0x00000"+hex(11)+" (/Lotus/Sounds/Dialog/CitrineLWDefenseMode/"+cit+") in one pass and 0.0s (I/O ~= 0.0%, inherited 190 of 191)");t+=0.01;
+              var cnt2=Math.ceil((vCount-emitted)/(waves.length-lwi));
+              for(var e2=0;e2<cnt2&&emitted<vCount&&step<V;e2++){
+                agentLine(!!dIdx[step-base]);step++;emitted++;
+                t=advance(t,isBurst()?rf(0.08,0.25):(roundT/vCount*rf(0.6,1.4)));
+                if(rnd()<0.12){netStats();t+=0.05;}
+              }
+              for(var bi2=0;bi2<5;bi2++)eomBurst(true);
+              for(var sw=0;sw<4;sw++)survivalReward();
+              if(profile.pauseSpike&&lwi===0){t+=rf(9,22);}
+              t+=rf(4,10);
+            }
+            while(step<perValid.slice(0,r+1).reduce(function(a,b){return a+b;},0)){agentLine(!!dIdx[step-base]);step++;t=advance(t,0.4);}
+            L(out,t,"Script [Info]: HudRedux.lua: Queuing new transmission: DCitFrgRem0660Lotus");t+=0.01;
+            L(out,t,"Script [Info]: HudRedux.lua: Queued a transmission from Hud: /Lotus/Sounds/Dialog/CitrineLWDefenseMode/DCitFrgRem0660Lotus");t+=0.01;transmissionPair();t+=0.2;
+            survivalReward();
+            eomBurst(true);eomBurst(true);eomBurst(true);
+            L(out,t,"Sys [Info]: Created /Lotus/Interface/DefenseReward.swf");t+=0.05;setCallbacks(9);
+            if(isLast){finalBlock();}
+            else{
+            continueBlock();
+            L(out,t,"Script [Info]: HudRedux.lua: Queuing new transmission: DCitCrpEnd0560Tyl");t+=0.01;
+            L(out,t,"Script [Info]: HudRedux.lua: Queued a transmission from Hud: /Lotus/Sounds/Dialog/CitrineLWDefenseMode/DCitCrpEnd0560Tyl");t+=0.01;transmissionPair();t+=rf(2,5);
+            }
+          }
+          lvl+=1;
+          /* 每轮背景收尾（拦截/镜像：presence、中继统计、特效、追踪；防御：追踪×2 + 隐身循环） */
+          function initMap(f){L(out,t,"Input [Info]: InitMapping for all devices with bindings /Configs/EE.cfg/LotusWindows_KeyBindings and filter "+f);t+=0.02;}
+          if(state.mode==="defense"){trackerLine();trackerLine();wispCycle();if(rnd()<0.3)eomBurst(true);initMap("/Lotus/Types/Player/TennoInputFilter");initMap("/Lotus/Types/Player/TennoEquippedMeleeFilter");}
+          else{presenceTrio();bridges();bridges();evolvingSwf();initMap("/Lotus/Types/Player/TennoEquippedMeleeFilter");initMap("/Lotus/Types/Player/TennoInputFilter");if(rnd()<0.3)ccontrol();natServer();trackerLine();trackerLine();}
+          if(r===longGapAt){L(out,t,"Net [Warning]: Retransmitting unacked NAT bind for server");t+=0.05;L(out,t,"Net [Warning]: Retransmitting unacked NAT bind for client");t+=rf(6,14);}
+          if(prog)prog(Math.round((r+1)/N*92));
+          res();
+        },0);
+      });
+    }
+    var seq=Promise.resolve();
+    for(var r=0;r<N;r++)(function(rr){seq=seq.then(function(){return roundJob(rr);});})(r);
+    seq.then(function(){
+      /* ---- 时长归一：任务体相对 t0 作线性缩放，对齐标称时长（N×单轮−3s），期望生息精确命中 ---- */
+      var nominal=inp.plannedDur-3;
+      var rawDur=(transTimes.length?(transTimes[transTimes.length-1]-t0):(t-t0))||1;
+      var kk=nominal/rawDur;
+      for(var zi=0;zi<out.length;zi++){if(out[zi][0]>=t0-0.05)out[zi][0]=t0+(out[zi][0]-t0)*kk;}
+      for(var zj=0;zj<transTimes.length;zj++)transTimes[zj]=t0+(transTimes[zj]-t0)*kk;
+      t=out[out.length-1][0]+0.5;
+      /* ---- 收尾：终局 inventory 结算 + 成功播报 + 任务结束标记（SS_ENDING/ReturnedToShip，缺失会被判未读完） ---- */
+      t+=0.5;
+      if(state.mode==="defense"){for(var k=0;k<24;k++){L(out,t,"Game [Warning]: DamagePct exceeds limits on:TennoAvatar"+ri(8,14)+" with:KuvaOgris reaching:"+rf(30,45).toFixed(4)+" of DT_EXPLOSION");t+=0.013;}}
+      L(out,t,"Sys [Info]: CommitInventoryChangesCallback - Success!(Attempt #0)");t+=0.02;
+      L(out,t,"Script [Info]: EndOfMatch.lua: DbUpdateComplete");t+=0.01;
+      L(out,t,"Script [Info]: EndOfMatch.lua: WRONG NUM REWARDS");t+=0.01;
+      L(out,t,"Sys [Info]: SyndicateXP base for mission: "+ri(200000,650000));t+=0.01;
+      L(out,t,"Sys [Info]: SyndicateXP post multiplier: "+ri(200000,650000));t+=0.01;
+      L(out,t,"Sys [Info]: SyndicateXP post checkpoint amount: "+ri(200000,650000));t+=0.01;
+      L(out,t,"Script [Info]: EndOfMatch.lua: NotifyTagMultiple(MISSION_REWARD_CREDITS): "+ri(20000,120000));t+=0.05;
+      if(state.mode==="interception"){["/Lotus/Scripts/Effects/HarrierEffects.lua","/Lotus/Scripts/WeaponAttachments/ArchMeleeWeapon.lua","/Lotus/Scripts/Effects/HarnessEffects.lua"].forEach(function(p){L(out,t,"Sys [Info]: Spot-loading "+p);t+=0.005;});}
+      L(out,t,"Sys [Info]: UploadChallengeProgress nothing changed, skipping upload");t+=0.01;
+      out.push([t,"OnUploadChallengeProgressResults:mRecentSeasonChallengeCompletions = 0, mRecentChallengeCompletions=0, mSavingRecentChallengeCompletions=0, mSavingRecentSeasonChallengeCompletions=0"]);t+=0.08;
+      L(out,t,"Sys [Info]: Stats uploaded");t+=0.1;
+      successFlow();
+      var tEnd=Math.max(t+0.5,transTimes[N-1]+rf(9,11));
+      L(out,tEnd,"Net [Info]: GameRulesImpl - changing state from SS_STARTED to SS_ENDING");t=tEnd+rf(0.1,0.25);
+      L(out,t,"Net [Info]: GameRulesImpl - changing state from SS_ENDING to SS_ENDED");t+=rf(5,7);
+      L(out,t,"Script [Info]: EndOfMatch.lua: ReturnedToShip");t+=rf(0.2,0.4);
+      L(out,t,"Script [Info]: EndOfMatch.lua: Skip ReturnedToShip");t+=rf(0.8,1.2);
+      L(out,t,"Script [Info]: EndOfMatch.lua: Skip ReturnedToShip");t+=2;
+      if(prog)prog(100);
+      /* 实际达成（按真实发射行统计回算） */
+      var dur=transTimes.length?(transTimes[transTimes.length-1]-t0):(t-t0);
+      var actEPH=(D*BASE_DROP*FULL_BUFF_MUL+expectedRounds(N))*3600/Math.max(1,dur);
+      var txt=out.map(function(e){return fmtT(e[0])+" "+e[1];}).join("\n")+"\n";
+      resolve({text:txt,lines:out.length,duration:dur,drones:D,valid:V,
+        enemyGenerated:sol.enemyGenerated,enemyEvents:sol.enemyEvents,
+        eph:actEPH,epm:actEPH/60,clear:D/Math.max(1,sol.enemyGenerated)/0.20*100,endT:t});
+    });
+  });
+}
+
+/* ============ 下载 ============ */
+function download(text){
+  var blob=new Blob([text],{type:"text/plain;charset=utf-8"});
+  var a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);a.download="EE.log";
+  document.body.appendChild(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},800);
+}
+
+/* ============ 事件绑定 ============ */
+function selectMode(el){
+    document.querySelectorAll(".mode").forEach(function(x){x.classList.remove("on");x.setAttribute("aria-checked","false");x.tabIndex=-1;});
+    el.classList.add("on");el.setAttribute("aria-checked","true");el.tabIndex=0;state.mode=el.dataset.m;
+    var cfg=MODE_CFG[state.mode];
+    if(state.mode==="defense"){$("roundLabel").textContent="波数（标准 81 波）";$("roundhint").textContent="防御按波输入：81 波 = 27 轮，上限 90 波";$("rounds").value=81;}
+    else if(state.mode==="mirror"){$("roundLabel").textContent="轮数（循环段）";$("roundhint").textContent="镜像防御：1 轮 ≈ 3~4 个环波，上限 12 轮，标准 9 轮（约75分钟）";$("rounds").value=9;}
+    else{$("roundLabel").textContent="轮数（争夺轮）";$("roundhint").textContent="拦截：1 轮 ≈ 1 次完整争夺，上限 12 轮，标准 10 轮（约69分钟）";$("rounds").value=10;}
+    var cap=state.mode==="defense"?90:cfg.maxRounds;
+    if(parseInt($("rounds").value||"1",10)>cap)$("rounds").value=cap;
+    refreshNodes();
+    if($("ess").value)doPreview();
+    if(window.gsap&&!matchMedia("(prefers-reduced-motion: reduce)").matches)gsap.fromTo(el,{scale:.98},{scale:1,duration:.18,ease:"power2.out"});
+}
+document.querySelectorAll(".mode").forEach(function(el){
+  el.addEventListener("click",function(){selectMode(el);});
+  el.addEventListener("keydown",function(event){
+    if(event.key==="Enter"||event.key===" "){event.preventDefault();selectMode(el);}
+    if(event.key==="ArrowLeft"||event.key==="ArrowUp"||event.key==="ArrowRight"||event.key==="ArrowDown"){
+      event.preventDefault();
+      var modes=Array.prototype.slice.call(document.querySelectorAll(".mode"));
+      var step=(event.key==="ArrowLeft"||event.key==="ArrowUp")?-1:1;
+      var next=modes[(modes.indexOf(el)+step+modes.length)%modes.length];next.focus();selectMode(next);
+    }
+  });
+});
+document.querySelectorAll(".unit").forEach(function(el){
+  el.addEventListener("click",function(){
+    document.querySelectorAll(".unit").forEach(function(x){x.classList.remove("on");});
+    el.classList.add("on");state.unit=el.dataset.u;if($("ess").value)doPreview();
+  });
+});
+$("node").addEventListener("change",function(){ updateNodeHint(); refreshDurationHint(); });
+if($("dur")) $("dur").addEventListener("input",function(){ clearTimeout(window.__dur); window.__dur=setTimeout(function(){ refreshDurationHint(); if($("ess").value) doPreview(); }, 350); });
+$("btnPreview").addEventListener("click",doPreview);
+["ess","rounds","clear"].forEach(function(id){$(id).addEventListener("input",function(){clearTimeout(window.__pv);window.__pv=setTimeout(function(){if($("ess").value)doPreview();},450);});});
+$("btnGen").addEventListener("click",function(){
+  var inp=readInputs(true);if(!inp)return;
+  var btn=$("btnGen");btn.disabled=true;
+  $("progress").style.display="block";$("progress").setAttribute("aria-valuenow","0");$("progressText").textContent="正在准备生成…";$("result").style.display="none";
+  var bar=document.querySelector("#progress span");
+  doPreview();
+  buildLog(inp,function(p){bar.style.width=p+"%";$("progress").setAttribute("aria-valuenow",p);$("progressText").textContent="正在生成日志："+p+"%";}).then(function(r){
+    download(r.text);
+    btn.disabled=false;
+    $("progressText").textContent="日志已生成并开始下载。";
+    var el=$("result");el.style.display="block";
+    el.textContent="✓ 已生成 EE.log（"+r.lines.toLocaleString()+" 行）\n"
+      +"  "+(state.mode==="defense"?(inp.rounds*3+"波 / "+inp.rounds+"轮"):inp.rounds+"轮")
+      +" · 实际时长 "+mmss(r.duration)+" · 无人机 "+r.drones+" · 敌人生成 "+r.enemyGenerated+" · 有效敌人 "+r.valid
+      +" · 全BUFF "+r.eph.toFixed(1)+"/时（"+r.epm.toFixed(2)+"/分）"
+      +" · 清场 "+r.clear.toFixed(1)+"%\n"
+      +"  文件已自动下载，固定命名 EE.log。";
+    if(window.gsap&&!matchMedia("(prefers-reduced-motion: reduce)").matches)gsap.fromTo(el,{y:8,opacity:0},{y:0,opacity:1,duration:.22,ease:"power2.out"});
+  });
+});
+
+/* tooltip */
+var tip=$("tip");
+document.addEventListener("mousemove",function(e){
+  var t=e.target.closest?e.target.closest("[data-tip]"):null;
+  if(t){
+    tip.innerHTML=t.getAttribute("data-tip");tip.classList.add("show");
+    var x=Math.min(window.innerWidth-310,e.clientX+18),y=Math.min(window.innerHeight-120,e.clientY+18);
+    tip.style.left=x+"px";tip.style.top=y+"px";
+  }else tip.classList.remove("show");
+});
+
+refreshNodes();
+</script>
+</body>
+</html>
