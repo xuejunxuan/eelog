@@ -50,25 +50,26 @@ h2 .hl{color:var(--sky-ink)}
 
 /* mode cards */
 .modes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-@media(max-width:760px){.modes{grid-template-columns:1fr}}
-.mode{position:relative;border:1px solid var(--line);border-radius:12px;padding:20px 18px;cursor:pointer;
-  background:var(--card);overflow:hidden;transition:border-color .2s,box-shadow .2s,transform .2s;min-height:180px}
+@media(max-width:880px){.modes{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.modes{grid-template-columns:1fr}}
+.mode{position:relative;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;padding:20px 18px;cursor:pointer;
+  background:var(--card);overflow:hidden;transition:border-color .2s,box-shadow .2s,transform .2s;min-height:190px}
 .mode:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(60,55,90,.10)}
 .mode.on,.mode:focus-visible{border-color:var(--sky);box-shadow:0 0 0 3px rgba(14,165,233,.18),0 8px 24px rgba(14,165,233,.12);outline:0}
 .mode .glow{display:none}
 .mode h3{font-size:17px;letter-spacing:.1em;margin-bottom:4px;color:var(--ink)}
 .mode .en{font-family:Consolas,monospace;font-size:10px;color:var(--muted);letter-spacing:.15em}
-.mode .rule{margin-top:12px;font-size:12px;color:var(--muted);line-height:1.9}
+.mode .rule{margin-top:12px;font-size:12px;color:var(--muted);line-height:1.9;min-height:68px}
 .mode .tick{position:absolute;top:12px;right:14px;font-family:Consolas,monospace;color:var(--sky-ink);font-size:13px;font-weight:700;opacity:0}
 .mode.on .tick{opacity:1}
-.mode-viz{height:36px;margin-top:16px;display:flex;align-items:center;position:relative;color:var(--sky-ink)}
-.viz-bars{gap:5px;align-items:flex-end}.viz-bars i{display:block;height:5px;background:currentColor;border-radius:999px;transform-origin:left;opacity:.38}.viz-bars i:nth-child(1){width:34%}.viz-bars i:nth-child(2){width:58%}.viz-bars i:nth-child(3){width:82%}
-.mode.on .viz-bars i{opacity:1;animation:bar-settle .42s both}.mode.on .viz-bars i:nth-child(2){animation-delay:.06s}.mode.on .viz-bars i:nth-child(3){animation-delay:.12s}
-.viz-rings{justify-content:center}.viz-rings i{position:absolute;border:1px solid currentColor;border-radius:50%;border-left-color:transparent}.viz-rings i:nth-child(1){width:34px;height:34px}.viz-rings i:nth-child(2){width:23px;height:23px;opacity:.7}.viz-rings i:nth-child(3){width:12px;height:12px;opacity:.45}.mode.on .viz-rings i{animation:ring-settle .55s both}.mode.on .viz-rings i:nth-child(2){animation-delay:.06s}.mode.on .viz-rings i:nth-child(3){animation-delay:.12s}
-.viz-points{justify-content:space-between;padding:0 12px}.viz-points::before{content:"";position:absolute;left:18px;right:18px;top:17px;height:1px;background:currentColor;opacity:.28}.viz-points i{position:relative;width:9px;height:9px;border-radius:50%;border:2px solid currentColor;background:var(--card);z-index:1}.mode.on .viz-points i{animation:point-settle .35s both}.mode.on .viz-points i:nth-child(2){animation-delay:.07s}.mode.on .viz-points i:nth-child(3){animation-delay:.14s}.mode.on .viz-points i:nth-child(4){animation-delay:.21s}
-@keyframes bar-settle{from{transform:scaleX(.2);opacity:.2}to{transform:scaleX(1);opacity:1}}
-@keyframes ring-settle{from{transform:scale(.45);opacity:0}to{transform:scale(1);opacity:1}}
-@keyframes point-settle{from{transform:scale(.2);background:var(--card)}to{transform:scale(1);background:var(--sky-soft)}}
+.mode-viz{height:42px;width:100%;min-width:0;margin-top:auto;padding-top:9px;display:grid;grid-template-columns:52px minmax(0,1fr);align-items:center;gap:8px;position:relative;color:#6e999a;border-top:1px solid var(--faint)}
+.mode-viz-label{font-size:9px;line-height:1.2;letter-spacing:.04em;color:var(--muted);white-space:nowrap}
+.mode-viz svg{display:block;width:100%;height:29px;overflow:visible}
+.mode-viz .viz-grid{fill:none;stroke:var(--line);stroke-width:.65;vector-effect:non-scaling-stroke}
+.mode-viz .viz-area{fill:var(--sky-soft)}
+.mode-viz .viz-line{fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.mode-viz .viz-end{fill:currentColor;stroke:var(--card);stroke-width:1.2;vector-effect:non-scaling-stroke}
+.mode.on .mode-viz{color:var(--sky-ink)}
 
 /* form */
 .panel{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:24px 22px}
@@ -99,7 +100,7 @@ h2 .hl{color:var(--sky-ink)}
 .board-value{font-family:Consolas,monospace;font-size:31px;line-height:1;color:var(--amber);letter-spacing:-.06em;margin:7px 0 5px}.board-value small{font-family:inherit;font-size:12px;letter-spacing:0;color:var(--amber)}
 .board-note{font-size:11px;color:var(--muted)}.board-track{min-width:0;display:flex;flex-direction:column;justify-content:flex-end}
 .track-title{display:flex;justify-content:space-between;align-items:center;gap:12px}.track-title .track-value{font:11px Consolas,monospace;color:var(--sky-ink)}
-.mission-track{display:flex;align-items:center;gap:5px;margin-top:13px;min-height:28px}.track-cell{flex:1;min-width:5px;height:22px;border-radius:3px;background:rgba(34,49,50,.10);overflow:hidden;position:relative}.track-cell::after{content:"";position:absolute;inset:0;transform:scaleY(var(--pressure,.45));transform-origin:bottom;background:var(--sky);opacity:.84;transition:transform .38s cubic-bezier(.2,.8,.2,1),background .2s}.track-cell.settlement::after{background:var(--amber)}.track-cell:first-child{border-radius:7px 3px 3px 7px}.track-cell:last-child{border-radius:3px 7px 7px 3px}
+.mission-track{margin-top:13px;min-height:36px;height:36px;overflow:hidden}.mission-track svg{display:block;width:100%;height:36px;overflow:visible}.curve-area{fill:var(--sky-soft)}.curve-line{fill:none;stroke:var(--sky-ink);stroke-width:2;vector-effect:non-scaling-stroke}.curve-end{fill:var(--amber);stroke:#fff;stroke-width:1.5;vector-effect:non-scaling-stroke}
 .track-caption{display:flex;justify-content:space-between;margin-top:7px;color:var(--muted);font:10px Consolas,monospace}
 .pvgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 @media(max-width:760px){.pvgrid{grid-template-columns:1fr 1fr}}
@@ -174,7 +175,7 @@ footer{position:relative;z-index:2;text-align:center;padding:44px 20px 36px;colo
   <h1 class="mega" id="mega">按参数生成一份模拟任务记录</h1>
   <div class="sub">选择模式、节点和队伍，再输入期望生息与任务进度。页面会按模式节奏安排生成、压力与结算事件。</div>
   <div class="chips">
-    <div class="chip">防御 / 镜像防御 / 拦截</div>
+    <div class="chip">防御 / 镜像防御 / 拦截 / 资源回收 / 中断 / 生存</div>
     <div class="chip">全 Buff 期望模型</div>
     <div class="chip">结构化日志输出</div>
     <div class="chip">纯离线 · 双击即用</div>
@@ -183,37 +184,55 @@ footer{position:relative;z-index:2;text-align:center;padding:44px 20px 36px;colo
 
 <section id="s1">
   <h2 class="reveal">任务模式</h2>
-  <p class="desc reveal">模式决定关卡节奏、轮次结算与敌人压力曲线。悬浮卡片可查看具体说明。</p>
+  <p class="desc reveal">模式决定关卡阶段、轮次节拍与敌人压力曲线。悬浮卡片可查看样本口径与任务事件。</p>
   <div class="modes" role="radiogroup" aria-label="任务模式">
       <div class="mode on" data-m="defense" role="radio" aria-checked="true" tabindex="0" data-tip="&lt;b&gt;防御&lt;/b&gt;：每轮包含 3 个防御波次。每波会写入独立的生成预算（总数、阶位、同屏上限和精英率），并以 DefenseReward::TransitionOut 作为轮次结算标记。单轮约 82 秒。">
       <div class="glow"></div><div class="tick">[✓]</div>
       <h3>防御</h3><div class="en">DEFENSE · MT_DEFENSE</div>
         <div class="rule">按波输入 · 标准 81 波约 37 分钟<br>波次预算与逐怪生成行<br>适合较短的多波次任务</div>
-        <div class="mode-viz viz-bars" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="mode-viz" data-mode-viz="defense"></div>
     </div>
       <div class="mode" data-m="mirror" role="radio" aria-checked="false" tabindex="-1" data-tip="&lt;b&gt;镜像防御&lt;/b&gt;：按循环防御（LoopDefend）推进。每轮包含多个环波和连续结算事件，单轮约 503 秒。">
       <div class="glow"></div><div class="tick">[✓]</div>
       <h3>镜像防御</h3><div class="en">MIRROR · LOOP DEFENSE</div>
         <div class="rule">循环波次推进 · 单轮约 503 秒<br>连续结算与环波播报<br>适合较长的连续任务</div>
-        <div class="mode-viz viz-rings" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="mode-viz" data-mode-viz="mirror"></div>
     </div>
       <div class="mode" data-m="interception" role="radio" aria-checked="false" tabindex="-1" data-tip="&lt;b&gt;拦截&lt;/b&gt;：以领地争夺（TerritoryMission）为主线，交替写入点位易手、关键时间点和队伍重组事件。每轮一次结算，单轮约 414 秒。">
       <div class="glow"></div><div class="tick">[✓]</div>
       <h3>拦截</h3><div class="en">INTERCEPTION · MT_TERRITORY</div>
         <div class="rule">领地争夺 · 单轮约 414 秒<br>点位易手与关键时间点<br>适合中等时长的稳定任务</div>
-        <div class="mode-viz viz-points" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="mode-viz" data-mode-viz="interception"></div>
+    </div>
+    <div class="mode" data-m="recovery" role="radio" aria-checked="false" tabindex="-1" data-tip="&lt;b&gt;资源回收&lt;/b&gt;：对应样本中的 MT_PURIFY 与 PurifyMission 阶段。按净化段组织敌人压力与目标状态变化。">
+      <div class="glow"></div><div class="tick">[✓]</div>
+      <h3>资源回收</h3><div class="en">RESOURCE RECOVERY · MT_PURIFY</div>
+        <div class="rule">净化目标阶段 · 单段约 90 秒样本节拍<br>阶段间压力起伏与短恢复<br>仲裁索引包含 1 个回收节点</div>
+        <div class="mode-viz" data-mode-viz="recovery"></div>
+    </div>
+    <div class="mode" data-m="disruption" role="radio" aria-checked="false" tabindex="-1" data-tip="&lt;b&gt;中断&lt;/b&gt;：对应 Kappa 节点的精英警报、MT_ARTIFACT 与 SentientArtifactMission 记录。每轮拆为多个干扰目标阶段，样本内大量记录为短任务片段，节拍按目标阶段合成。">
+      <div class="glow"></div><div class="tick">[✓]</div>
+      <h3>中断</h3><div class="en">DISRUPTION · MT_ARTIFACT</div>
+        <div class="rule">多目标干扰阶段 · 单轮约 90 秒合成节拍<br>目标状态与敌人波动交替<br>仲裁索引包含 6 个中断节点</div>
+        <div class="mode-viz" data-mode-viz="disruption"></div>
+    </div>
+    <div class="mode" data-m="survival" role="radio" aria-checked="false" tabindex="-1" data-tip="&lt;b&gt;生存&lt;/b&gt;：对应 MT_SURVIVAL、SurvivalMission 与 SurvivalReward 事件。每轮约 5 分钟，按生命支持事件形成波动，敌人压力随任务阶段连续变化。">
+      <div class="glow"></div><div class="tick">[✓]</div>
+      <h3>生存</h3><div class="en">SURVIVAL · MT_SURVIVAL</div>
+        <div class="rule">生命支持循环 · 每轮约 5 分钟<br>补给脉冲与渐进增压<br>仲裁索引包含 23 个生存节点</div>
+        <div class="mode-viz" data-mode-viz="survival"></div>
     </div>
   </div>
 </section>
 
 <section id="s2">
   <h2 class="reveal">节点与队伍</h2>
-  <p class="desc reveal">节点列表使用内置参考值，切换模式后会自动筛选对应地图。
+  <p class="desc reveal">节点列表按所选模式筛选仲裁节点，名称采用参考索引中的中文显示名；索引未提供中文名时保留原名，并显示对应星球。生息效率按你输入的期望值计算，不按节点单独预设。
   队伍最终固定为 4 人：留空的位置会自动填充 7–15 位随机英文名。</p>
   <div class="panel reveal">
     <div class="fgrid">
       <div class="field">
-        <label>任务节点 <span class="q" data-tip="&lt;b&gt;任务节点&lt;/b&gt;：决定日志中的任务名、关卡资源路径、派系和参考生息。下拉列表只显示当前模式可用的地图，括号内为内置参考值（/时）。">?</span></label>
+        <label>任务节点 <span class="q" data-tip="&lt;b&gt;任务节点&lt;/b&gt;：决定日志中的任务名、地图族和派系；选项按参考索引显示节点名称与星球。新增模式未由样本确认的地图路径按星球地图族推断，敌人从对应模式/派系模板池抽取。">?</span></label>
         <select id="node"></select>
         <div class="hintline" id="nodehint"></div>
       </div>
@@ -247,12 +266,12 @@ footer{position:relative;z-index:2;text-align:center;padding:44px 20px 36px;colo
         </div>
       </div>
       <div class="field">
-        <label><span id="roundLabel">波数（标准 81 波）</span> <span class="q" data-tip="&lt;b&gt;轮 / 波次&lt;/b&gt;：防御按波输入（标准 81 波，自动按 3 波一轮换算，非 3 的倍数会就近取整）；拦截 / 镜像防御按轮输入（标准 10 / 9 轮）。范围：防御 3–90 波，拦截/镜像 1–12 轮。">?</span></label>
+        <label><span id="roundLabel">波数（标准 81 波）</span> <span class="q" data-tip="&lt;b&gt;任务节拍&lt;/b&gt;：防御按波输入并按 3 波换算为一轮；镜像防御、拦截、资源回收、中断、生存按各自任务阶段输入。切换模式会载入该模式的建议值与上限。">?</span></label>
         <input type="number" id="rounds" min="1" max="90" step="1" value="81">
         <div class="hintline" id="roundhint">防御：81 波 = 27 轮</div>
       </div>
       <div class="field">
-        <label>任务总时长 <span class="q" data-tip="&lt;b&gt;任务总时长&lt;/b&gt;：主机时长（SS_STARTED → 末次结算）。留空则按模式节拍自动估算（防御 82s/轮、拦截 414s/轮、镜像 503s/轮，带 ±8% 抖动）；也可手动输入，例如 37:45、1h7m50s、2264。输入会直接决定日志时间跨度和对应的生息反解。">?</span></label>
+        <label>任务总时长 <span class="q" data-tip="&lt;b&gt;任务总时长&lt;/b&gt;：主机时长（SS_STARTED → 末次模式结算）。留空则按模式节拍估算：防御 82s/轮、镜像 503s/轮、拦截 414s/轮、资源回收与中断约 90s/阶段、生存 300s/轮，并带少量平滑浮动；也可手动输入，例如 37:45、1h7m50s、2264。">?</span></label>
         <input type="text" id="dur" placeholder="留空自动估算，或填如 37:45 / 1h7m50s / 2264" aria-describedby="durhint durError">
         <div class="hintline" id="durhint">留空自动估算；手动输入会锁定预览与生成文件的总时长</div>
         <div class="field-error" id="durError" aria-live="polite"></div>
@@ -281,7 +300,7 @@ footer{position:relative;z-index:2;text-align:center;padding:44px 20px 36px;colo
         </div>
       </div>
       <div class="pvgrid">
-        <div class="pv"><div class="k">节点基准 /时</div><div class="v cy" id="pvBase">待计算</div></div>
+        <div class="pv"><div class="k">节点生息基准</div><div class="v cy" id="pvBase">未预设</div></div>
         <div class="pv"><div class="k">任务总时长</div><div class="v cy" id="pvDur">待计算</div></div>
         <div class="pv"><div class="k">无人机总数</div><div class="v" id="pvDrones">待计算</div></div>
         <div class="pv"><div class="k">敌人生成 / 有效敌人</div><div class="v" id="pvValid">待计算</div></div>
@@ -304,10 +323,10 @@ footer{position:relative;z-index:2;text-align:center;padding:44px 20px 36px;colo
 <section id="s4">
   <h2 class="reveal">计算口径</h2>
   <div class="steps">
-    <div class="step reveal"><h5>轮次与时长</h5><p>每轮以 <code>DefenseReward::TransitionOut</code> 记录结算；任务时长从 <code>SS_STARTED</code> 记至最后一次结算。输入的轮次决定结算次数，时长按模式节拍安排：防御 82 秒、拦截 414 秒、镜像 503 秒。</p></div>
-    <div class="step reveal"><h5>按生息估算无人机</h5><p>全 Buff 生息按 <code>无人机×0.06×5.9 + 轮次保底与红利</code> 计算。前 4 轮每轮加 0.21，之后每轮加 0.30；页面会结合期望值、轮次和时长估算无人机数，并分配到各轮。</p></div>
+    <div class="step reveal"><h5>轮次与时长</h5><p>任务时长从 <code>SS_STARTED</code> 记至最后一次模式结算。防御以 3 波为 1 轮，镜像按循环段、拦截按争夺轮、资源回收按净化段、中断按目标组、生存按生命支持轮生成；模式使用各自的记录标记。</p></div>
+    <div class="step reveal"><h5>按生息估算无人机</h5><p>期望生息直接采用用户输入，按全 Buff 口径换算无人机数；计算式为 <code>无人机×0.06×5.9 + 轮次保底与红利</code>。前 4 轮每轮加 0.21，之后每轮加 0.30。无人机取整、轻微扰动和所选模式的预算上限会使实际回显值与输入目标略有差异。</p></div>
     <div class="step reveal"><h5>按清场估算敌人</h5><p>清场效率按 <code>无人机/(有效敌人−无人机)/0.2×100</code> 计算。页面据此估算有效敌人总数，再按波次预算写入 <code>OnAgentCreated</code> 行，<code>Spawned</code> 计数持续递增。</p></div>
-    <div class="step reveal"><h5>日志结构</h5><p>生成文件包含启动、关卡加载、队伍、任务和收尾记录；字段和事件顺序在同一份文件内保持一致。</p></div>
+    <div class="step reveal"><h5>日志结构</h5><p>生成文件包含启动、关卡加载、队伍、模式专属任务阶段和收尾记录；同一模式内的字段与事件顺序保持一致。</p></div>
   </div>
 </section>
 
@@ -315,59 +334,131 @@ footer{position:relative;z-index:2;text-align:center;padding:44px 20px 36px;colo
 
 <script>
 "use strict";
-/* ============ 内置节点基准（防御 / 镜像防御 / 拦截） ============ */
+/* ============ 任务节点索引 ============ */
 var NODES=[
-{id:"ClanNode22",name:"Seimeni",planet:"谷神星",type:"defense",typeZh:"防御",faction:"Infested",perHour:779.1},
-{id:"SolNode164",name:"Kala-azar",planet:"阋神星",type:"defense",typeZh:"防御",faction:"Infested",perHour:752.3},
-{id:"ClanNode24",name:"Sechura",planet:"冥王星",type:"defense",typeZh:"防御",faction:"Infested",perHour:736.5},
-{id:"SolNode149",name:"Casta",planet:"谷神星",type:"defense",typeZh:"防御",faction:"Grineer",perHour:734.6},
-{id:"ClanNode4",name:"Sinai",planet:"木星",type:"defense",typeZh:"防御",faction:"Infested",perHour:725.7},
-{id:"ClanNode18",name:"Akkad",planet:"阋神星",type:"defense",typeZh:"防御",faction:"Infested",perHour:721.5},
-{id:"ClanNode2",name:"Coba",planet:"地球",type:"defense",typeZh:"防御",faction:"Infested",perHour:720.1},
-{id:"ClanNode6",name:"Larzac",planet:"欧罗巴",type:"defense",typeZh:"防御",faction:"Infested",perHour:712.8},
-{id:"ClanNode8",name:"Kadesh",planet:"火星",type:"defense",typeZh:"防御",faction:"Infested",perHour:711.2},
-{id:"SolNode195",name:"Hydron",planet:"赛德娜",type:"defense",typeZh:"防御",faction:"Grineer",perHour:706.5},
-{id:"SolNode707",name:"Hyf",planet:"火卫二",type:"defense",typeZh:"防御",faction:"Infested",perHour:700.6},
-{id:"SolNode408",name:"Belenus",planet:"虚空",type:"defense",typeZh:"防御",faction:"Orokin",perHour:685.8},
-{id:"SolNode42",name:"Helene",planet:"土星",type:"defense",typeZh:"防御",faction:"Grineer",perHour:685.7},
-{id:"SolNode46",name:"Spear",planet:"火星",type:"defense",typeZh:"防御",faction:"Grineer",perHour:676.2},
-{id:"SolNode122",name:"Stephano",planet:"天王星",type:"defense",typeZh:"防御",faction:"Grineer",perHour:640.3},
-{id:"SolNode402",name:"Taranis",planet:"虚空",type:"defense",typeZh:"防御",faction:"Orokin",perHour:639.1},
-{id:"SolNode125",name:"Io",planet:"木星",type:"defense",typeZh:"防御",faction:"Corpus",perHour:622.9},
-{id:"SolNode212",name:"Paimon",planet:"欧罗巴",type:"defense",typeZh:"防御",faction:"Corpus",perHour:613.2},
-{id:"SolNode72",name:"Outer Terminus",planet:"冥王星",type:"defense",typeZh:"防御",faction:"Corpus",perHour:602.2},
-{id:"SolNode22",name:"Tessera",planet:"金星",type:"defense",typeZh:"防御",faction:"Corpus",perHour:595.4},
-{id:"ClanNode0",name:"Romula",planet:"金星",type:"defense",typeZh:"防御",faction:"Infested",perHour:581.8},
-{id:"SolNode305",name:"Stofler",planet:"月球",type:"defense",typeZh:"防御",faction:"Grineer",perHour:525.0},
-{id:"SolNode26",name:"Lith",planet:"地球",type:"defense",typeZh:"防御",faction:"Grineer",perHour:514.3},
-{id:"SettlementNode11",name:"Gulliver",planet:"火卫一",type:"defense",typeZh:"防御",faction:"Corpus",perHour:505.4},
-{id:"SolNode130",name:"Lares",planet:"水星",type:"defense",typeZh:"防御",faction:"Grineer",perHour:497.8},
-{id:"ClanNode15",name:"Sangeru",planet:"赛德娜",type:"defense",typeZh:"防御",faction:"Infested",perHour:488.1},
-{id:"SolNode17",name:"Proteus",planet:"海王星",type:"defense",typeZh:"防御",faction:"Corpus",perHour:460.0},
-{id:"SolNode450",name:"Tyana Pass",planet:"火星",type:"mirror",typeZh:"镜像防御",faction:"Crossfire",perHour:1159.9},
-{id:"SolNode719",name:"Munio",planet:"火卫二",type:"mirror",typeZh:"镜像防御",faction:"The Murmur",perHour:1051.6},
-{id:"SolNode25",name:"Callisto",planet:"木星",type:"interception",typeZh:"拦截",faction:"Corpus",perHour:1010.6},
-{id:"SolNode23",name:"Cytherean",planet:"金星",type:"interception",typeZh:"拦截",faction:"Corpus",perHour:995.4},
-{id:"SolNode64",name:"Umbriel",planet:"天王星",type:"interception",typeZh:"拦截",faction:"Grineer",perHour:942.0},
-{id:"SolNode106",name:"Alator",planet:"火星",type:"interception",typeZh:"拦截",faction:"Grineer",perHour:939.9},
-{id:"SolNode172",name:"Xini",planet:"阋神星",type:"interception",typeZh:"拦截",faction:"Infested",perHour:926.2},
-{id:"SolNode147",name:"Cinxia",planet:"谷神星",type:"interception",typeZh:"拦截",faction:"Grineer",perHour:872.6},
-{id:"SolNode224",name:"Odin",planet:"水星",type:"interception",typeZh:"拦截",faction:"Grineer",perHour:769.0},
-{id:"SolNode211",name:"Ose",planet:"欧罗巴",type:"interception",typeZh:"拦截",faction:"Corpus",perHour:725.3},
-{id:"SolNode412",name:"Mithra",planet:"虚空",type:"interception",typeZh:"拦截",faction:"Orokin",perHour:663.0},
-{id:"SolNode43",name:"Cerberus",planet:"冥王星",type:"interception",typeZh:"拦截",faction:"Corpus",perHour:446.1},
-{id:"SolNode85",name:"Gaia",planet:"地球",type:"interception",typeZh:"拦截",faction:"Grineer",perHour:391.5},
-{id:"SolNode18",name:"Rhea",planet:"土星",type:"interception",typeZh:"拦截",faction:"Grineer",perHour:348.5},
-{id:"SolNode185",name:"Berehynia",planet:"赛德娜",type:"interception",typeZh:"拦截",faction:"Grineer",perHour:295.4}
+
+{id:"ClanNode22",name:"Seimeni",displayName:"Seimeni",planet:"谷神星",type:"defense",typeZh:"防御",faction:"Infestation",perHour:null},
+{id:"SolNode164",name:"Kala-azar",displayName:"Kala-azar",planet:"阋神星",type:"defense",typeZh:"防御",faction:"Infestation",perHour:null},
+{id:"ClanNode24",name:"Sechura",displayName:"Sechura",planet:"冥王星",type:"defense",typeZh:"防御",faction:"Infestation",perHour:null},
+{id:"SolNode149",name:"Casta",displayName:"Casta",planet:"谷神星",type:"defense",typeZh:"防御",faction:"Grineer",perHour:null},
+{id:"ClanNode4",name:"Sinai",displayName:"Sinai",planet:"木星",type:"defense",typeZh:"防御",faction:"Infestation",perHour:null},
+{id:"ClanNode18",name:"Akkad",displayName:"Akkad",planet:"阋神星",type:"defense",typeZh:"防御",faction:"Infestation",perHour:null},
+{id:"ClanNode2",name:"Coba",displayName:"Coba",planet:"地球",type:"defense",typeZh:"防御",faction:"Infestation",perHour:null},
+{id:"ClanNode6",name:"Larzac",displayName:"Larzac",planet:"欧罗巴",type:"defense",typeZh:"防御",faction:"Infestation",perHour:null},
+{id:"ClanNode8",name:"Kadesh",displayName:"Kadesh",planet:"火星",type:"defense",typeZh:"防御",faction:"Infestation",perHour:null},
+{id:"SolNode195",name:"Hydron",displayName:"Hydron",planet:"赛德娜",type:"defense",typeZh:"防御",faction:"Grineer",perHour:null},
+{id:"SolNode707",name:"Hyf",displayName:"Hyf",planet:"火卫二",type:"defense",typeZh:"防御",faction:"Infestation",perHour:null},
+{id:"SolNode408",name:"Belenus",displayName:"光神塔",planet:"虚空",type:"defense",typeZh:"防御",faction:"奥罗金",perHour:null},
+{id:"SolNode42",name:"Helene",displayName:"Helene",planet:"土星",type:"defense",typeZh:"防御",faction:"Grineer",perHour:null},
+{id:"SolNode46",name:"Spear",displayName:"Spear",planet:"火星",type:"defense",typeZh:"防御",faction:"Grineer",perHour:null},
+{id:"SolNode122",name:"Stephano",displayName:"Stephano",planet:"天王星",type:"defense",typeZh:"防御",faction:"Grineer",perHour:null},
+{id:"SolNode402",name:"Taranis",displayName:"雷争塔",planet:"虚空",type:"defense",typeZh:"防御",faction:"奥罗金",perHour:null},
+{id:"SolNode125",name:"Io",displayName:"Io",planet:"木星",type:"defense",typeZh:"防御",faction:"Corpus",perHour:null},
+{id:"SolNode212",name:"Paimon",displayName:"Paimon",planet:"欧罗巴",type:"defense",typeZh:"防御",faction:"Corpus",perHour:null},
+{id:"SolNode72",name:"Outer Terminus",displayName:"Outer Terminus",planet:"冥王星",type:"defense",typeZh:"防御",faction:"Corpus",perHour:null},
+{id:"SolNode22",name:"Tessera",displayName:"Tessera",planet:"金星",type:"defense",typeZh:"防御",faction:"Corpus",perHour:null},
+{id:"ClanNode0",name:"Romula",displayName:"Romula",planet:"金星",type:"defense",typeZh:"防御",faction:"Infestation",perHour:null},
+{id:"SolNode305",name:"Stöfler",displayName:"Stöfler",planet:"月球",type:"defense",typeZh:"防御",faction:"Grineer",perHour:null},
+{id:"SolNode26",name:"Lith",displayName:"Lith",planet:"地球",type:"defense",typeZh:"防御",faction:"Grineer",perHour:null},
+{id:"SettlementNode11",name:"Gulliver",displayName:"Gulliver",planet:"火卫一",type:"defense",typeZh:"防御",faction:"Corpus",perHour:null},
+{id:"SolNode130",name:"Lares",displayName:"Lares",planet:"水星",type:"defense",typeZh:"防御",faction:"Infestation",perHour:null},
+{id:"ClanNode15",name:"Sangeru",displayName:"Sangeru",planet:"赛德娜",type:"defense",typeZh:"防御",faction:"Infestation",perHour:null},
+{id:"SolNode17",name:"Proteus",displayName:"Proteus",planet:"海王星",type:"defense",typeZh:"防御",faction:"Corpus",perHour:null},
+{id:"SolNode450",name:"Tyana Pass",displayName:"Tyana Pass",planet:"火星",type:"mirror",typeZh:"镜像防御",faction:"Corpus",perHour:null},
+{id:"SolNode719",name:"Munio",displayName:"墓垒",planet:"火卫二",type:"mirror",typeZh:"镜像防御",faction:"低语者",perHour:null},
+{id:"SolNode25",name:"Callisto",displayName:"Callisto",planet:"木星",type:"interception",typeZh:"拦截",faction:"Corpus",perHour:null},
+{id:"SolNode23",name:"Cytherean",displayName:"Cytherean",planet:"金星",type:"interception",typeZh:"拦截",faction:"Corpus",perHour:null},
+{id:"SolNode64",name:"Umbriel",displayName:"Umbriel",planet:"天王星",type:"interception",typeZh:"拦截",faction:"Grineer",perHour:null},
+{id:"SolNode106",name:"Alator",displayName:"Alator",planet:"火星",type:"interception",typeZh:"拦截",faction:"Grineer",perHour:null},
+{id:"SolNode172",name:"Xini",displayName:"Xini",planet:"阋神星",type:"interception",typeZh:"拦截",faction:"Infestation",perHour:null},
+{id:"SolNode147",name:"Cinxia",displayName:"Cinxia",planet:"谷神星",type:"interception",typeZh:"拦截",faction:"Grineer",perHour:null},
+{id:"SolNode224",name:"Odin",displayName:"Odin",planet:"水星",type:"interception",typeZh:"拦截",faction:"Grineer",perHour:null},
+{id:"SolNode211",name:"Ose",displayName:"Ose",planet:"欧罗巴",type:"interception",typeZh:"拦截",faction:"Corpus",perHour:null},
+{id:"SolNode412",name:"Mithra",displayName:"光理塔",planet:"虚空",type:"interception",typeZh:"拦截",faction:"奥罗金",perHour:null},
+{id:"SolNode43",name:"Cerberus",displayName:"Cerberus",planet:"冥王星",type:"interception",typeZh:"拦截",faction:"Corpus",perHour:null},
+{id:"SolNode85",name:"Gaia",displayName:"Gaia",planet:"地球",type:"interception",typeZh:"拦截",faction:"Grineer",perHour:null},
+{id:"SolNode18",name:"Rhea",displayName:"Rhea",planet:"土星",type:"interception",typeZh:"拦截",faction:"Grineer",perHour:null},
+{id:"SolNode185",name:"Berehynia",displayName:"Berehynia",planet:"赛德娜",type:"interception",typeZh:"拦截",faction:"Grineer",perHour:null},
+{id:"SolNode167",name:"Oestrus",displayName:"Oestrus",planet:"阋神星",type:"recovery",typeZh:"资源回收",faction:"Infestation",perHour:null},
+{id:"SolNode30",name:"Olympus",displayName:"Olympus",planet:"火星",type:"disruption",typeZh:"中断",faction:"Grineer",perHour:null},
+{id:"SolNode87",name:"Ganymede",displayName:"Ganymede",planet:"木星",type:"disruption",typeZh:"中断",faction:"Corpus",perHour:null},
+{id:"ClanNode16",name:"Ur",displayName:"Ur",planet:"天王星",type:"disruption",typeZh:"中断",faction:"Infestation",perHour:null},
+{id:"SolNode118",name:"Laomedeia",displayName:"Laomedeia",planet:"海王星",type:"disruption",typeZh:"中断",faction:"Corpus",perHour:null},
+{id:"SolNode177",name:"Kappa",displayName:"Kappa",planet:"赛德娜",type:"disruption",typeZh:"中断",faction:"Grineer",perHour:null},
+{id:"SolNode308",name:"Apollo",displayName:"Apollo",planet:"月球",type:"disruption",typeZh:"中断",faction:"Corpus",perHour:null},
+{id:"SolNode94",name:"Apollodorus",displayName:"Apollodorus",planet:"水星",type:"survival",typeZh:"生存",faction:"Infestation",perHour:null},
+{id:"ClanNode1",name:"Malva",displayName:"Malva",planet:"金星",type:"survival",typeZh:"生存",faction:"Infestation",perHour:null},
+{id:"SolNode123",name:"V Prime",displayName:"V Prime",planet:"金星",type:"survival",typeZh:"生存",faction:"Corpus",perHour:null},
+{id:"ClanNode9",name:"Wahiba",displayName:"Wahiba",planet:"火星",type:"survival",typeZh:"生存",faction:"Infestation",perHour:null},
+{id:"SettlementNode3",name:"Stickney",displayName:"Stickney",planet:"火卫一",type:"survival",typeZh:"生存",faction:"Corpus",perHour:null},
+{id:"ClanNode11",name:"Zeugma",displayName:"Zeugma",planet:"火卫一",type:"survival",typeZh:"生存",faction:"Infestation",perHour:null},
+{id:"SolNode711",name:"Terrorem",displayName:"Terrorem",planet:"火卫二",type:"survival",typeZh:"生存",faction:"Infestation",perHour:null},
+{id:"SolNode146",name:"Draco",displayName:"Draco",planet:"谷神星",type:"survival",typeZh:"生存",faction:"Grineer",perHour:null},
+{id:"ClanNode23",name:"Gabii",displayName:"Gabii",planet:"谷神星",type:"survival",typeZh:"生存",faction:"Infestation",perHour:null},
+{id:"ClanNode5",name:"Cameria",displayName:"Cameria",planet:"木星",type:"survival",typeZh:"生存",faction:"Infestation",perHour:null},
+{id:"SolNode100",name:"Elara",displayName:"Elara",planet:"木星",type:"survival",typeZh:"生存",faction:"Corpus",perHour:null},
+{id:"ClanNode13",name:"Piscinas",displayName:"Piscinas",planet:"土星",type:"survival",typeZh:"生存",faction:"Infestation",perHour:null},
+{id:"SolNode96",name:"Titan",displayName:"Titan",planet:"土星",type:"survival",typeZh:"生存",faction:"Grineer",perHour:null},
+{id:"ClanNode17",name:"Assur",displayName:"Assur",planet:"天王星",type:"survival",typeZh:"生存",faction:"Infestation",perHour:null},
+{id:"ClanNode21",name:"Kelashin",displayName:"Kelashin",planet:"海王星",type:"survival",typeZh:"生存",faction:"Infestation",perHour:null},
+{id:"SolNode81",name:"Palus",displayName:"Palus",planet:"冥王星",type:"survival",typeZh:"生存",faction:"Corpus",perHour:null},
+{id:"ClanNode14",name:"Amarna",displayName:"Amarna",planet:"赛德娜",type:"survival",typeZh:"生存",faction:"Infestation",perHour:null},
+{id:"SolNode187",name:"Selkie",displayName:"Selkie",planet:"赛德娜",type:"survival",typeZh:"生存",faction:"Grineer",perHour:null},
+{id:"SolNode166",name:"Nimus",displayName:"Nimus",planet:"阋神星",type:"survival",typeZh:"生存",faction:"Infestation",perHour:null},
+{id:"ClanNode19",name:"Zabala",displayName:"Zabala",planet:"阋神星",type:"survival",typeZh:"生存",faction:"Infestation",perHour:null},
+{id:"SolNode302",name:"Tycho",displayName:"Tycho",planet:"月球",type:"survival",typeZh:"生存",faction:"Corpus",perHour:null},
+{id:"SolNode405",name:"Ani",displayName:"阿尼塔",planet:"虚空",type:"survival",typeZh:"生存",faction:"奥罗金",perHour:null},
+{id:"SolNode409",name:"Mot",displayName:"死灵塔",planet:"虚空",type:"survival",typeZh:"生存",faction:"奥罗金",perHour:null}
 ];
 var MODE_CFG={
-  defense:{roundSec:82,wavesPerRound:3,mt:"MT_DEFENSE",cap:14,maxRounds:30,stdRounds:27},
-  mirror:{roundSec:503,wavesPerRound:2,mt:"MT_DEFENSE",cap:34,maxRounds:12,stdRounds:9},
-  interception:{roundSec:414,wavesPerRound:1,mt:"MT_TERRITORY",cap:32,maxRounds:12,stdRounds:10}
+  defense:{roundSec:82,wavesPerRound:3,mt:"MT_DEFENSE",cap:14,maxRounds:30,maxInput:90,stdRounds:27,standardInput:81,inputMode:"waves",inputLabel:"波数（标准 81 波）",inputHint:"防御按波输入：81 波 = 27 轮，上限 90 波",countLabel:"轮",defaultNode:"SolNode149",maxDPerRound:70,spawnDrop:.02,liveCap:29,initialLive:[8,12],lowLive:[8,10],highLive:[16,16],monitorHigh:[.88,.98],monitorLow:[.15,.35],droneMonitor:[.12,.35],monitorThreshold:12,burstSize:[3,7],highPctCap:8,highPctCurve:[0,0,.3,0,0,0,0,0,0,0,1.4,0,0,0,.4,7.4,0,0,0,0,0,.3,4.5,0,0,.7,5.7],pressureCurve:[.10,.76,.49,.68,.82,.55,.74,.58],pressureCycles:5,ripple:.035},
+  mirror:{roundSec:503,wavesPerRound:2,mt:"MT_DEFENSE",cap:34,maxRounds:12,maxInput:12,stdRounds:9,standardInput:9,inputMode:"rounds",inputLabel:"轮数（循环段）",inputHint:"镜像防御：1 轮约 3–4 个环波，上限 12 轮，标准 9 轮",countLabel:"轮",defaultNode:"SolNode450",maxDPerRound:650,spawnDrop:.008,liveCap:34,initialLive:[14,18],lowLive:[14.5,17.5],highLive:[32,34.5],monitorHigh:[.92,.99],monitorLow:[.52,.68],droneMonitor:[.35,.60],monitorThreshold:28,burstSize:[5,10],highPctCap:25,highPctCurve:[.9,7,9.6,13.7,7.2,10.9,10.2,8.9,15.1],pressureCurve:[.22,.55,.41,.78,.56,.82,.59,.72],pressureCycles:7,ripple:.045},
+  interception:{roundSec:414,wavesPerRound:1,mt:"MT_TERRITORY",cap:32,maxRounds:12,maxInput:12,stdRounds:10,standardInput:10,inputMode:"rounds",inputLabel:"轮数（争夺轮）",inputHint:"拦截：按完整点位争夺轮输入，上限 12 轮，标准 10 轮",countLabel:"轮",defaultNode:"SolNode147",maxDPerRound:650,spawnDrop:.01,liveCap:32,initialLive:[10,14],lowLive:[8.5,11.5],highLive:[23,26],monitorHigh:[.88,.97],monitorLow:[.32,.52],droneMonitor:[.35,.60],monitorThreshold:16,burstSize:[4,9],highPctCap:25,highPctCurve:[23,15.1,2.8,5.4,4.5,5.7,6,3.6,3.6,4.3],pressureCurve:[.09,.10,.19,.42,.66,.88,.80,.61],pressureCycles:6,ripple:.035},
+  recovery:{roundSec:90,wavesPerRound:1,mt:"MT_PURIFY",cap:28,maxRounds:20,maxInput:20,stdRounds:6,standardInput:6,inputMode:"rounds",inputLabel:"净化段数（样本节拍）",inputHint:"资源回收：按净化段输入，样本活动段中位约 90 秒，上限 20 段",countLabel:"净化段",defaultNode:"SolNode167",maxDPerRound:220,spawnDrop:.012,liveCap:28,initialLive:[7,11],lowLive:[8,12],highLive:[19,24],monitorHigh:[.84,.95],monitorLow:[.24,.46],droneMonitor:[.28,.52],monitorThreshold:15,burstSize:[3,7],highPctCap:24,highPctCurve:[9,15,12,20,14,22,16,12],pressureCurve:[.16,.49,.73,.38,.68,.47,.81,.52],pressureCycles:5,ripple:.04},
+  disruption:{roundSec:90,wavesPerRound:1,mt:"MT_ARTIFACT",cap:32,maxRounds:16,maxInput:16,stdRounds:8,standardInput:8,inputMode:"rounds",inputLabel:"干扰轮数",inputHint:"中断：每轮按多个目标阶段编排；样本含短片段，默认节拍约 90 秒，上限 16 轮",countLabel:"轮",defaultNode:"SolNode177",maxDPerRound:300,spawnDrop:.01,liveCap:32,initialLive:[9,13],lowLive:[9,13],highLive:[22,28],monitorHigh:[.88,.97],monitorLow:[.30,.52],droneMonitor:[.32,.57],monitorThreshold:16,burstSize:[4,8],highPctCap:25,highPctCurve:[15,21,13,24,16,23,17,21],pressureCurve:[.17,.61,.34,.78,.44,.73,.48,.82],pressureCycles:8,ripple:.04},
+  survival:{roundSec:300,wavesPerRound:1,mt:"MT_SURVIVAL",cap:32,maxRounds:12,maxInput:12,stdRounds:6,standardInput:6,inputMode:"rounds",inputLabel:"生存轮数（5 分钟节拍）",inputHint:"生存：每轮约 5 分钟，按生命支持阶段输入，上限 12 轮",countLabel:"轮",defaultNode:"SolNode711",maxDPerRound:500,spawnDrop:.01,liveCap:32,initialLive:[8,13],lowLive:[9,13],highLive:[23,29],monitorHigh:[.88,.97],monitorLow:[.32,.55],droneMonitor:[.34,.58],monitorThreshold:16,burstSize:[4,9],highPctCap:25,highPctCurve:[5,8,13,24,31,25,18,20],pressureCurve:[.12,.17,.23,.72,.94,.76,.57,.65],pressureCycles:4,ripple:.035}
 };
+/* 新模式在标准节拍下提供约 1 万/时的合成空间；按每阶段无人机预算封顶。 */
+MODE_CFG.recovery.maxDPerRound=750;
+MODE_CFG.disruption.maxDPerRound=850;
+MODE_CFG.survival.maxDPerRound=2400;
+var MODE_NAMES={defense:"防御",mirror:"镜像防御",interception:"拦截",recovery:"资源回收",disruption:"中断",survival:"生存"};
+function curveValue(points,progress){
+  var p=Math.max(0,Math.min(1,progress)),x=p*(points.length-1),i=Math.min(points.length-2,Math.floor(x)),f=x-i;
+  var eased=f*f*(3-2*f);
+  return points[i]+(points[i+1]-points[i])*eased;
+}
+function modePressure(mode,progress,phase){
+  var cfg=MODE_CFG[mode],p=Math.max(0,Math.min(1,progress));
+  return Math.max(.04,Math.min(.98,curveValue(cfg.pressureCurve,p)+Math.sin(p*Math.PI*2*cfg.pressureCycles+(phase||0))*cfg.ripple));
+}
+function modeVizMarkup(mode){
+  var pts=[],path="",count=49;
+  for(var i=0;i<count;i++){
+    var p=i/(count-1),x=p*100,y=29-modePressure(mode,p,0)*23;
+    pts.push({x:x,y:y});
+  }
+  path="M "+pts[0].x.toFixed(2)+" "+pts[0].y.toFixed(2);
+  for(var j=1;j<pts.length;j++)path+=" L "+pts[j].x.toFixed(2)+" "+pts[j].y.toFixed(2);
+  var area=path+" L 100 31 L 0 31 Z",last=pts[pts.length-1];
+  return '<span class="mode-viz-label" aria-hidden="true">相对压力</span><svg viewBox="0 0 100 34" preserveAspectRatio="none" role="img" aria-label="'+MODE_NAMES[mode]+'模式相对压力趋势"><path class="viz-grid" d="M0 31 H100 M25 29 V33 M50 29 V33 M75 29 V33"></path><path class="viz-area" d="'+area+'"></path><path class="viz-line" d="'+path+'"></path><circle class="viz-end" cx="'+last.x.toFixed(2)+'" cy="'+last.y.toFixed(2)+'" r="1.7"></circle></svg>';
+}
+function drawModeCharts(){
+  document.querySelectorAll("[data-mode-viz]").forEach(function(el){
+    var mode=el.getAttribute("data-mode-viz");
+    if(MODE_CFG[mode])el.innerHTML=modeVizMarkup(mode);
+  });
+}
+function advanceCurve(t,dt,mode,progress,phase){
+  var pressure=modePressure(mode,progress,phase),p=Math.max(0,Math.min(1,progress)),cadence=1.16-pressure*.30;
+  var drift=Math.sin(p*Math.PI*4+(phase||0)*.37)*.024+Math.sin(p*Math.PI*1.5+(phase||0)*.13)*.01;
+  return t+Math.max(.001,dt*cadence*(1+drift)*rf(.987,1.013));
+}
+function runCountLabel(inp){var cfg=MODE_CFG[state.mode];return cfg.inputMode==="waves"?inp.waves+" 波 / "+inp.rounds+" 轮":inp.rounds+" "+cfg.countLabel;}
 var BASE_DROP=0.06, FULL_BUFF_MUL=5.9;
 function extraVitus(n){n=Math.max(0,Math.floor(n));return 0.07*Math.min(n,4)*3+0.10*Math.max(0,n-4)*3;}
 function expectedRounds(n){return Math.floor(n)+extraVitus(n);}
+function standardModeCapEPH(cfg){return Math.round((cfg.maxDPerRound*BASE_DROP*FULL_BUFF_MUL+expectedRounds(1))*3600/cfg.roundSec);}
 
 /* ============ 随机工具（种子随机，保证每次文件指纹不同） ============ */
 var _s=(Date.now()%2147483646)+1;
@@ -390,12 +481,10 @@ function refreshNodes(){
   var sel=$("node");sel.innerHTML="";
   modeNodes().forEach(function(n){
     var o=document.createElement("option");o.value=n.id;
-    o.text=n.name+" · "+n.planet+" · 基准 "+n.perHour+"/时";
+    o.text=n.displayName+" · "+n.planet;
     sel.appendChild(o);
   });
-  if(state.mode==="defense"){sel.value="SolNode149";}
-  else if(state.mode==="mirror"){sel.value="SolNode450";}
-  else{sel.value="SolNode147";}
+  sel.value=MODE_CFG[state.mode].defaultNode;
   updateNodeHint();
 }
 function parseDuration(str){
@@ -424,7 +513,7 @@ function parseDuration(str){
   return null;
 }
 function curNode(){var id=$("node").value;for(var i=0;i<NODES.length;i++)if(NODES[i].id===id)return NODES[i];return NODES[0];}
-function updateNodeHint(){var n=curNode();$("nodehint").innerHTML="已选：<code>"+n.name+" ("+n.planet+") · "+n.typeZh+" · "+n.id+" · 派系 "+n.faction+"</code>";}
+function updateNodeHint(){var n=curNode();$("nodehint").innerHTML="已选节点：<code>"+n.displayName+" · "+n.planet+" · "+n.typeZh+" · 派系 "+n.faction+"</code>";}
 function refreshDurationHint(){
   var inp=readInputs(false);
   if(!inp) return;
@@ -450,13 +539,13 @@ function readInputs(forGen){
   var rawCount=Math.max(1,Math.floor(parseFloat($("rounds").value)||1));
   var cfg=MODE_CFG[state.mode];
   var rounds,waves=0;
-  if(state.mode==="defense"){
-    if(rawCount>90){rawCount=90;$("rounds").value=90;}
+  if(cfg.inputMode==="waves"){
+    if(rawCount>cfg.maxInput){rawCount=cfg.maxInput;$("rounds").value=cfg.maxInput;}
     waves=Math.max(3,Math.round(rawCount/3)*3);
     if(waves!==rawCount){$("rounds").value=waves;}
     rounds=Math.max(1,Math.round(waves/3));
   }else{
-    if(rawCount>cfg.maxRounds){rawCount=cfg.maxRounds;$("rounds").value=rawCount;}
+    if(rawCount>cfg.maxInput){rawCount=cfg.maxInput;$("rounds").value=rawCount;}
     rounds=Math.max(1,rawCount);
   }
   var clear=parseFloat($("clear").value);
@@ -488,24 +577,24 @@ function solve(inp){
   var drones=Math.round((fullBuffTotal-fromRounds)/(BASE_DROP*FULL_BUFF_MUL));
   var minD=n*8;
   if(!(drones>=minD))drones=minD;
-  var maxD=n*(state.mode==="defense"?70:650);
+  var maxD=n*cfg.maxDPerRound;
   if(drones>maxD)drones=maxD;
   /* 反取整痕迹：无人机与有效数各加确定性微扰（±2%），避免与输入完全互为整算 */
   var jd=1+((((Math.round(inp.eph*3)+inp.rounds*37+inp.node.id.length*11)%41)-20)/1000);
-  drones=Math.max(8,Math.round(drones*jd));
+  drones=Math.max(minD,Math.min(maxD,Math.round(drones*jd)));
   /* 清场效率采用分析器口径：无人机 /（有效事件数 - 无人机）/ 20%。
    * Spawned 峰值仅用于完整性对照，不能作为清场效率分母。 */
   var targetClear=inp.clearAuto
     ? 75+((Math.round(inp.eph*13)+n*7+inp.node.id.length)%2001)/100
     : inp.clear;
-  var spawnDrop=state.mode==="defense"?.02:(state.mode==="interception"?.01:.008);
+  var spawnDrop=cfg.spawnDrop;
   var enemyEvents=Math.max(n*20,Math.round(drones*500/targetClear));
   var enemyGenerated=Math.max(1,Math.round(enemyEvents*(1-spawnDrop)));
   var valid=enemyEvents+drones;
   var droneFull=drones*BASE_DROP*FULL_BUFF_MUL;
   var totalFull=droneFull+fromRounds;
   var eph=totalFull*3600/duration, epm=eph/60;
-  var eff=eph/inp.node.perHour*100;
+  var eff=Number.isFinite(inp.node.perHour)&&inp.node.perHour>0?eph/inp.node.perHour*100:null;
   var clearAct=drones/Math.max(1,enemyEvents)/0.20*100;
   return {duration:duration,fromRounds:fromRounds,drones:drones,valid:valid,
     enemyGenerated:enemyGenerated,enemyEvents:enemyEvents,spawnDrop:spawnDrop,
@@ -513,41 +602,63 @@ function solve(inp){
 }
 function mmss(s){s=Math.round(s);return Math.floor(s/60)+"分"+(s%60)+"秒";}
 function updateMissionBoard(inp,r){
-  var count=Math.max(6,Math.min(18,inp.rounds*(state.mode==="defense"?1:2)));
-  var track=$("missionTrack");track.innerHTML="";
-  for(var i=0;i<count;i++){
-    var cell=document.createElement("span");cell.className="track-cell"+(i===count-1?" settlement":"");
-    var phase=(i+1)/count;
-    var pressure=state.mode==="defense"?.34+phase*.56:state.mode==="mirror"?.55+Math.sin(phase*Math.PI)*.3:.42+Math.abs(Math.sin(phase*Math.PI*2.1))*.38;
-    cell.style.setProperty("--pressure",Math.min(.95,pressure).toFixed(2));track.appendChild(cell);
+  var track=$("missionTrack"),points=[],path="",i,count=49;
+  for(i=0;i<count;i++){
+    var phase=i/(count-1),pressure=modePressure(state.mode,phase,0);
+    points.push({x:phase*100,y:33-pressure*29});
   }
+  path="M "+points[0].x.toFixed(2)+" "+points[0].y.toFixed(2);
+  for(i=1;i<points.length;i++)path+=" L "+points[i].x.toFixed(2)+" "+points[i].y.toFixed(2);
+  var area=path+" L 100 36 L 0 36 Z",last=points[points.length-1];
+  track.innerHTML='<svg viewBox="0 0 100 36" preserveAspectRatio="none" role="img" aria-label="'+MODE_NAMES[state.mode]+'模式的相对任务压力曲线"><path class="curve-area" d="'+area+'"></path><path class="curve-line" d="'+path+'"></path><circle class="curve-end" cx="'+last.x.toFixed(2)+'" cy="'+last.y.toFixed(2)+'" r="2.2"></circle></svg>';
   $("boardEPH").innerHTML=r.eph.toFixed(1)+"<small>/时</small>";
-  $("boardNote").textContent=state.mode==="defense"?inp.waves+" 波，"+inp.rounds+" 次结算":inp.rounds+" 轮，按模式节奏编排";
-  $("trackValue").textContent=mmss(r.duration)+" · "+(state.mode==="defense"?inp.waves+" 波":inp.rounds+" 轮");
+  $("boardNote").textContent=(r.eph+0.5<inp.eph?"实际值低于输入目标（取整、扰动或模式预算）":"相对压力曲线")+" · "+runCountLabel(inp);
+  $("trackValue").textContent=mmss(r.duration)+" · "+runCountLabel(inp);
   $("trackEnd").textContent=mmss(r.duration);
 }
 function doPreview(){
   var inp=readInputs(false);if(!inp)return;
   var r=solve(inp);
-  $("pvBase").textContent=inp.node.perHour.toFixed(1);
+  $("pvBase").textContent="未预设";
   $("pvDur").textContent=mmss(r.duration)+(inp.durAuto?"（自动）":"（手动）");
   $("pvDrones").textContent=r.drones;
   $("pvValid").textContent=r.enemyGenerated+" / "+r.valid;
   $("pvEPH").textContent=r.eph.toFixed(1);
   $("pvEPM").textContent=r.epm.toFixed(2);
   $("pvClear").textContent=r.clearAct.toFixed(1)+"%"+(inp.clearAuto?"（自动）":"");
-  $("pvEff").textContent=r.eff.toFixed(1)+"%";
-  $("fhint").textContent=state.mode==="defense"?(inp.rounds*3+"波 / "+inp.rounds+"轮"):(inp.rounds+"轮");
+  $("pvEff").textContent=r.eff==null?"不计算":r.eff.toFixed(1)+"%";
+  $("fhint").textContent=runCountLabel(inp);
   updateMissionBoard(inp,r);
   refreshDurationHint();
   if(window.gsap&&!matchMedia("(prefers-reduced-motion: reduce)").matches){gsap.fromTo(".pv .v",{opacity:.35,y:4},{opacity:1,y:0,duration:.18,stagger:.025,ease:"power2.out",overwrite:true});}
 }
 
 /* ============ 日志合成 ============ */
-/* ============ 42 节点真实关卡路径表（Host_StartMatch 实测 + 同星球/同派系地砖族推断） ============ */
-var NODE_LVL={ClanNode22:"Grineer/GrineerShipyardsDefense",SolNode164:"Infested/InfestedShipDefense",ClanNode24:"Corpus/CorpusOutpostDefense",SolNode149:"Grineer/GrineerShipyardsDefense",ClanNode4:"Corpus/CorpusGasCityDefense",ClanNode18:"Infested/InfestedShipDefense",ClanNode2:"Grineer/GrineerForestDefense",ClanNode6:"Corpus/CorpusIcePlanetDefense",ClanNode8:"Grineer/GrineerSettlementDefense",SolNode195:"Grineer/GrineerGalleonDefense",SolNode707:"Orokin/OrokinTowerDerelictDefense",SolNode408:"Orokin/OrokinTowerDefense",SolNode42:"Grineer/GrineerGalleonDefense",SolNode46:"Grineer/GrineerSettlementDefense",SolNode122:"Grineer/GrineerSealabDefense",SolNode402:"Orokin/OrokinTowerDefense",SolNode125:"Corpus/CorpusGasCityDefense",SolNode212:"Corpus/CorpusIcePlanetDefense",SolNode72:"Corpus/CorpusOutpostDefense",SolNode22:"Corpus/CorpusOutpostDefense",ClanNode0:"Corpus/CorpusOutpostDefense",SolNode305:"Orokin/OrokinMoonDefense",SolNode26:"Grineer/GrineerForestDefense",SettlementNode11:"Corpus/CorpusShipDefense",SolNode130:"Grineer/GrineerAsteroidDefense",ClanNode15:"Grineer/GrineerGalleonDefense",SolNode17:"Corpus/CorpusShipDefense",SolNode450:"LastWish/LastWishDefense",SolNode719:"EntratiLab/EntratiLabDefense",SolNode25:"Corpus/CorpusGasCityInterception",SolNode23:"Corpus/CorpusOutpostInterception",SolNode64:"Grineer/GrineerSealabInterception",SolNode106:"Grineer/GrineerSettlementInterception",SolNode172:"Infested/InfestedShipInterception",SolNode147:"Grineer/GrineerShipyardsInterception",SolNode224:"Grineer/GrineerAsteroidInterception",SolNode211:"Corpus/CorpusIcePlanetInterception",SolNode412:"Orokin/OrokinTowerInterception",SolNode43:"Corpus/CorpusOutpostInterception",SolNode85:"Grineer/GrineerForestInterception",SolNode18:"Grineer/GrineerGalleonInterception",SolNode185:"Grineer/GrineerGalleonInterception"};
+/* ============ 既有路径表（样本实测/同星球地砖族推断） + 新节点地图族推断 ============ */
+var NODE_LVL={ClanNode22:"Grineer/GrineerShipyardsDefense",SolNode164:"Infested/InfestedShipDefense",ClanNode24:"Corpus/CorpusOutpostDefense",SolNode149:"Grineer/GrineerShipyardsDefense",ClanNode4:"Corpus/CorpusGasCityDefense",ClanNode18:"Infested/InfestedShipDefense",ClanNode2:"Grineer/GrineerForestDefense",ClanNode6:"Corpus/CorpusIcePlanetDefense",ClanNode8:"Grineer/GrineerSettlementDefense",SolNode195:"Grineer/GrineerGalleonDefense",SolNode707:"Orokin/OrokinTowerDerelictDefense",SolNode408:"Orokin/OrokinTowerDefense",SolNode42:"Grineer/GrineerGalleonDefense",SolNode46:"Grineer/GrineerSettlementDefense",SolNode122:"Grineer/GrineerSealabDefense",SolNode402:"Orokin/OrokinTowerDefense",SolNode125:"Corpus/CorpusGasCityDefense",SolNode212:"Corpus/CorpusIcePlanetDefense",SolNode72:"Corpus/CorpusOutpostDefense",SolNode22:"Corpus/CorpusOutpostDefense",ClanNode0:"Corpus/CorpusOutpostDefense",SolNode305:"Orokin/OrokinMoonDefense",SolNode26:"Grineer/GrineerForestDefense",SettlementNode11:"Corpus/CorpusShipDefense",SolNode130:"Grineer/GrineerAsteroidDefense",ClanNode15:"Grineer/GrineerGalleonDefense",SolNode17:"Corpus/CorpusShipDefense",SolNode450:"LastWish/LastWishDefense",SolNode719:"EntratiLab/EntratiLabDefense",SolNode25:"Corpus/CorpusGasCityInterception",SolNode23:"Corpus/CorpusOutpostInterception",SolNode64:"Grineer/GrineerSealabInterception",SolNode106:"Grineer/GrineerSettlementInterception",SolNode172:"Infested/InfestedShipInterception",SolNode147:"Grineer/GrineerShipyardsInterception",SolNode224:"Grineer/GrineerAsteroidInterception",SolNode211:"Corpus/CorpusIcePlanetInterception",SolNode412:"Orokin/OrokinTowerInterception",SolNode43:"Corpus/CorpusOutpostInterception",SolNode85:"Grineer/GrineerForestInterception",SolNode18:"Grineer/GrineerGalleonInterception",SolNode185:"Grineer/GrineerGalleonInterception",SolNode167:"Infestation/InfestedCorpusShipPurify",SolNode177:"Grineer/GrineerGalleonDisruption",SolNode711:"Orokin/OrokinTowerDerelictSurvivalRaid"};
+var NODE_TILESET={"水星":"Grineer/GrineerAsteroid","金星":"Corpus/CorpusOutpost","地球":"Grineer/GrineerForest","火星":"Grineer/GrineerSettlement","火卫一":"Corpus/CorpusShip","火卫二":"Orokin/OrokinTowerDerelict","谷神星":"Grineer/GrineerShipyards","木星":"Corpus/CorpusGasCity","欧罗巴":"Corpus/CorpusIcePlanet","土星":"Grineer/GrineerGalleon","天王星":"Grineer/GrineerSealab","海王星":"Corpus/CorpusShip","冥王星":"Corpus/CorpusOutpost","赛德娜":"Grineer/GrineerGalleon","阋神星":"Infested/InfestedShip","月球":"Orokin/OrokinMoon","虚空":"Orokin/OrokinTower"};
+function levelPathForNode(node){
+  if(NODE_LVL[node.id])return NODE_LVL[node.id];
+  var tile=NODE_TILESET[node.planet],suffix=state.mode==="disruption"?"Disruption":state.mode==="survival"?"Survival":"";
+  if(tile&&suffix)return tile+suffix;
+  var samplePath={defense:"Grineer/GrineerShipyardsDefense",mirror:"LastWish/LastWishDefense",interception:"Grineer/GrineerShipyardsInterception",recovery:"Infestation/InfestedCorpusShipPurify",disruption:"Grineer/GrineerGalleonDisruption",survival:"Orokin/OrokinTowerDerelictSurvivalRaid"};
+  return samplePath[state.mode]||"Grineer/GrineerShipyardsDefense";
+}
 /* 怪池归属：cout=前哨族(Venus前缀实测), corpus=通用Corpus, 其余默认grineer（虚空堕落者/黑暗地带沿用行星基底，参考数据未覆盖处已在注释说明） */
-var NODE_POOL={ClanNode24:"cout",SolNode22:"cout",ClanNode0:"cout",SolNode72:"cout",SolNode23:"cout",SolNode43:"cout",ClanNode4:"corpus",SolNode125:"corpus",SolNode212:"corpus",SettlementNode11:"corpus",SolNode25:"corpus",SolNode211:"corpus",SolNode17:"corpus"};
+var NODE_POOL={ClanNode24:"cout",SolNode22:"cout",ClanNode0:"cout",SolNode72:"cout",SolNode23:"cout",SolNode43:"cout",ClanNode4:"corpus",SolNode125:"corpus",SolNode212:"corpus",SettlementNode11:"corpus",SolNode25:"corpus",SolNode211:"corpus",SolNode17:"corpus",SolNode167:"infested",SolNode177:"disruption",SolNode711:"survival"};
+function nodePoolType(node){
+  if(NODE_POOL[node.id])return NODE_POOL[node.id];
+  if(state.mode==="mirror")return "mirror";
+  if(state.mode==="recovery")return "infested";
+  if(node.faction==="Infested"||node.faction==="Infestation")return "infested";
+  if(node.faction==="Corpus")return "corpus";
+  if(state.mode==="disruption")return "disruption";
+  return "grineer";
+}
+/* 新模式使用六份样本里出现的敌人类型；资源回收的完整敌潮未覆盖，复用生存样本中已观测到的 Infested 类型。 */
+var POOL_INFESTED=[["近战奔行者","MeleeRunner"],["跳跃奔行者","LeapingRunner"],["感染爬行者","GraspingCrawler"],["毒性爬行者","NoxiousCrawler"],["闪电爬行者","LightningCrawler"],["古代感染者","DiseasedAncient"],["生成古代感染者","SpawningAncient"],["自爆奔行者","SuicideRunner"]];
+var POOL_DISRUPTION=[["精英枪兵","EliteRifleLancer"],["精英枪兵","EliteRifleLancer"],["刀锯兵","BladeSawmanNoCoverSurvival"],["天蝎","MacheteWomanNoCover"],["轰击者","MinigunBombard"],["火焰枪兵","FlameLancer"],["干扰者","DisruptionCharger"],["干扰轰击者","DisruptionMinigunBombard"],["干扰者","DisruptionNoxAgent"],["Sentient 节点 A","SentientAmalgamArtifactAgentA"],["Sentient 节点 B","SentientAmalgamArtifactAgentB"],["Sentient 节点 C","SentientAmalgamArtifactAgentC"],["Sentient 节点 D","SentientAmalgamArtifactAgentD"]];
+var POOL_SURVIVAL=[["近战奔行者","MeleeRunner"],["四足单位","Quadruped"],["盾无人机","CorpusEliteShieldDroneAgent"],["毒性无人机","PoisonDroneAgent"],["慢速爆破单位","SlowBombBipedAgent"],["纳米云单位","NaniteCloudBipedAgent"],["冲锋单位","RusherAgent"],["感染爬行者","GraspingCrawler"],["自爆奔行者","SuicideRunner"]];
 /* 显示名+路径成对出现，保证 Next spawn 与 Spawned a 行对应（全部字符串均出自参考日志实测） */
 var POOL_GRINEER=[["精英枪兵","EliteRifleLancer"],["精英枪兵","EliteRifleLancer"],["精英枪兵","EliteRifleLancer"],["盾枪兵","ShieldLancer"],["盾枪兵","ShieldLancer"],["骑兵","ShotgunLancer"],["骑兵","ShotgunLancer"],["禁卫军","GrineerMeleeStaffAgentNoLeader"],["禁卫军","GrineerMeleeStaffAgentNoLeader"],["天蝎","MacheteWomanNoCover"],["天蝎","MacheteWomanNoCover"],["鬣猫驯兽师","CatMaster"],["精英枪兵","GrineerMarineLeader"],["重型机枪手","MinigunBombard"],["开膛者","EviseratorLancer"],["轰击者","RocketBombard"],["精英枪兵","EliteShieldLancer"],["怒焚者","FlameLancer"],["禁卫军","GrineerMarinePistol"],["盾枪兵","GrineerFemale"],["天蝎","BeastMaster"],["精英枪兵","ChemStrikeNoxAgent"],["追踪者","GrineerCharger"]];
 var POOL_COUT=[["船员","VenusCombatSpacemanAgent"],["船员","VenusHeavyEliteSpacemanAgent"],["船员","VenusShotgunSpacemanAgent"],["船员","VenusHeavyMeleeEliteSpacemanAgent"],["鱼鹰","VenusDroneAttackAgent"],["鱼鹰","VenusShieldDroneAgent"],["鱼鹰","VenusLaserCannonBipedAgent"],["恐鸟","VenusShockwaveBipedAgent"],["鱼鹰","VenusIcewaveEliteBipedAgent"]];
@@ -580,7 +691,7 @@ function buildLog(inp,prog){
     var user="Player"+ri(100,999),pc="PC-"+hex(8);
     var hostIP=ri(11,223)+"."+ri(0,255)+"."+ri(0,255)+"."+ri(1,254)+":"+ri(10000,60000);
     var pubIP=ri(11,223)+"."+ri(0,255)+"."+ri(0,255)+"."+ri(1,254);
-    var profR=hex(32),profW1=hex(32);
+    var profR=hex(32),profW1=profR.slice(16)+profR.slice(0,16);
     var memGB=ri(12,32),diskC=(ri(100,900)*1e9)|0,diskD=(ri(100,900)*1e9)|0;
 
     /* ---- 启动头 ---- */
@@ -670,9 +781,9 @@ function buildLog(inp,prog){
     /* 大厅组队 */
     var mm=[hex(24),hex(24),hex(24),hex(24)];
     L(out,t,"Net [Info]: AddSquadMember: "+names[0]+ICON+", mm="+mm[0]+", squadCount=1");t+=rf(20,40);
-    for(var si=1;si<4;si++){L(out,t,"Net [Info]: AddSquadMember: "+names[si]+ICON+", mm="+mm[si]+", squadCount="+(si+1));t+=rf(1,45);L(out,t,"Sys [Info]: Profile hash on write: "+hex(32));t+=rf(2,20);}
+    for(var si=1;si<4;si++){L(out,t,"Net [Info]: AddSquadMember: "+names[si]+ICON+", mm="+mm[si]+", squadCount="+(si+1));t+=rf(1,45);L(out,t,"Sys [Info]: Profile hash on write: "+(si===1?profW1:hex(32)));t+=rf(2,20);}
     /* 投票 + 进图 */
-    var lvlPath="/Lotus/Levels/Proc/"+(NODE_LVL[node.id]||"Grineer/GrineerShipyardsDefense");
+  var lvlPath="/Lotus/Levels/Proc/"+levelPathForNode(node);
     var lpTag=(function(){var s="",ch="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",n=pick([4,4,4,8]);for(var i=0;i<n;i++)s+=ch[ri(0,ch.length-1)];return s;})();
     ["SolNode137 - NUOVO","SolNode135 - THON","SolNode131 - PALLAS","SolNode59 - EURASIA"].slice(0,ri(2,4)).forEach(function(nr){L(out,t,"Script [Info]: MapRedux.lua: MapRedux::NodeRollOver "+nr);t+=rf(1,4);});
     var tVote=t+rf(60,120);
@@ -710,7 +821,8 @@ function buildLog(inp,prog){
     L(out,t,"Sys [Error]: /Lotus/Types/Enemies/Corpus/Drones/AIWeek/CorpusEliteShieldDroneAgent [NpcAgent] had problems with its property text:");t+=0.6;
 
     var agentIdx=0,spawned=0;
-    var POOL=state.mode==="mirror"?POOL_MIRROR:(NODE_POOL[node.id]==="cout"?POOL_COUT:(NODE_POOL[node.id]==="corpus"?POOL_CORPUS:POOL_GRINEER));
+    var poolType=nodePoolType(node);
+    var POOL=state.mode==="mirror"?POOL_MIRROR:poolType==="cout"?POOL_COUT:poolType==="corpus"?POOL_CORPUS:poolType==="infested"?POOL_INFESTED:poolType==="disruption"?POOL_DISRUPTION:poolType==="survival"?POOL_SURVIVAL:POOL_GRINEER;
     var OPCLOAK=state.mode==="interception"?"/Lotus/Fx/PowersuitAbilities/Loki/CloakAltA":"/Lotus/Fx/PowersuitAbilities/Loki/Cloak";
     var FW_IDS=["69399e2b322d221f850e0c70","693a2280b374d40e57076015"],fwFlip=0;
     var haveKuva=rnd()<0.7;
@@ -718,7 +830,7 @@ function buildLog(inp,prog){
     var TID_T=state.mode==="mirror"?524:15, TID_O=state.mode==="mirror"?531:35;
     var BRK=state.mode==="mirror"?("19"+String(ri(100000000000,999999999999))):("290"+String(ri(1000000000,9999999999)));
     function petLine(npc,bump){var sp=bump?(spawned++):0;L(out,t,"AI [Info]: OnAgentCreated /Npc/"+npc+agentIdx+" Live "+ri(0,7)+" Spawned "+sp+(bump?"":" Ignored")+" Ticking 0 Paused 0 IgnoredTicking 0 MonitoredTicking 0 AllyLive 0 AllyActive 0 NeutralActive 0");agentIdx++;t=advance(t,0.3);}
-    (state.mode==="defense"?["CatbrowPetAgent","KubrowPetAgent","SentinelAgent","CatbrowPetAgent"]:state.mode==="interception"?["CatbrowPetAgent","CatbrowPetAgent","CatbrowPetAgent","CatbrowPetAgent"]:["CatbrowPetAgent","CatbrowPetAgent","CatbrowPetAgent","KubrowPetAgent"]).forEach(function(pp){petLine(pp);});
+    (state.mode==="defense"?["CatbrowPetAgent","KubrowPetAgent","SentinelAgent","CatbrowPetAgent"]:state.mode==="interception"?["CatbrowPetAgent","CatbrowPetAgent","CatbrowPetAgent","CatbrowPetAgent"]:state.mode==="mirror"?["CatbrowPetAgent","CatbrowPetAgent","CatbrowPetAgent","KubrowPetAgent"]:["CatbrowPetAgent","SentinelAgent","CatbrowPetAgent","KubrowPetAgent"]).forEach(function(pp){petLine(pp);});
     t+=rf(0.3,0.8);
     var t0=t+rf(0.5,1.2);
     L(out,t0,"Net [Info]: GameRulesImpl - changing state from SS_WAITING_FOR_PLAYERS to SS_STARTED");
@@ -729,9 +841,12 @@ function buildLog(inp,prog){
     }else if(state.mode==="interception"){
       for(var si2=0;si2<8;si2++)petLine("VoidCloneCatbrowPetAgent",true);
       petLine("CatbrowPetAgent",true);petLine("CatbrowPetAgent",true);petLine("CatbrowPetAgent",true);petLine("CatbrowPetAgent",true);
-    }else{
+    }else if(state.mode==="mirror"){
       for(var si3=0;si3<10;si3++)petLine("VoidCloneCatbrowPetAgent");
       petLine("CatbrowPetAgent");petLine("CatbrowPetAgent");petLine("CatbrowPetAgent");petLine("CatbrowPetAgent");petLine("SentinelAgent");petLine("SentinelAgent");
+    }else{
+      for(var si4=0;si4<6;si4++)petLine("VoidCloneCatbrowPetAgent");
+      petLine("CatbrowPetAgent");petLine("KubrowPetAgent");petLine("SentinelAgent");
     }
     t+=rf(0.5,1.5);
     if(state.mode==="defense"){
@@ -754,6 +869,16 @@ function buildLog(inp,prog){
     if(state.mode==="interception"){
       L(out,t,"Script [Info]: TerritoryMission.lua: SquadLib.lua::InitLib - Using 3 entries.");t+=2;
     }
+    if(state.mode==="recovery"){
+      L(out,t,"Script [Info]: PurifyMission.lua: ModeState");t+=0.02;
+      L(out,t,"Script [Info]: PurifyMission.lua: ObjectiveText");t+=0.05;
+    }else if(state.mode==="disruption"){
+      L(out,t,"Script [Info]: SentientArtifactMission.lua: ModeState");t+=0.02;
+      L(out,t,"Script [Info]: SentientArtifactMission.lua: Disruption");t+=0.05;
+    }else if(state.mode==="survival"){
+      L(out,t,"Script [Info]: SurvivalMission.lua: ModeState");t+=0.02;
+      L(out,t,"Script [Info]: SurvivalMission.lua: Survival");t+=0.05;
+    }
     if(state.mode==="defense"){
       L(out,t,"Script [Info]: WaveDefend.lua: Defense: Starting defense waves");t+=0.02;
       L(out,t,"Script [Info]: WaveDefend.lua: _SleepBetweenWaves(3)");t+=3;
@@ -764,29 +889,24 @@ function buildLog(inp,prog){
      * 真空期≥12秒 / 敌人占用率 / 敌人-无人机比 / 10秒峰值无人机。
      * 高压恢复：按模式阈值（12/10、16/13、28/20）分簇生成可变高压驻留与恢复时长。 */
     var roundProfile=[],i,dPhase=rf(0,6.28),dWeights=[],wSum=0;
-    var _highPoolDef=[0,0,0.3,0,0,0,0,0,0,0,1.4,0,0,0,0.4,7.4,0,0,0,0,0,0.3,4.5,0,0,0.7,5.7];
-    var _highPoolInt=[23,15.1,2.8,5.4,4.5,5.7,6,3.6,3.6,4.3];
-    var _highPoolMir=[0.9,7,9.6,13.7,7.2,10.9,10.2,8.9,15.1];
     for(i=0;i<N;i++){
       var progress=N===1?0.5:i/(N-1);
-      var pressureWave=Math.sin(progress*5.2+dPhase*1.15);
+      var pressure=modePressure(state.mode,progress,dPhase);
+      var pressureWave=pressure-.5;
       var paceWave=Math.sin(progress*4.1+dPhase);
       var fatigue=progress*0.12;
-      dWeights[i]=Math.max(0.55,1+0.22*paceWave+rf(-0.10,0.10));
+      dWeights[i]=Math.max(0.55,1+0.16*paceWave+pressureWave*.22+rf(-.045,.045));
       wSum+=dWeights[i];
-      var baseHigh;
-      if(state.mode==="defense") baseHigh=_highPoolDef[ri(0,_highPoolDef.length-1)];
-      else if(state.mode==="interception") baseHigh=_highPoolInt[ri(0,_highPoolInt.length-1)];
-      else baseHigh=_highPoolMir[ri(0,_highPoolMir.length-1)];
-      baseHigh=Math.max(0, baseHigh+rf(-1.2,1.2));
+      var baseHigh=Math.max(0,curveValue(cfg.highPctCurve,progress)+rf(-.8,.8));
       if(state.mode==="defense") baseHigh=Math.min(8, baseHigh*1.3);
       else if(state.mode==="mirror") baseHigh=Math.min(25, baseHigh*1.75);
       roundProfile.push({
-        durationFactor:Math.max(.80,Math.min(1.20,1+0.10*paceWave+rf(-.06,.06))),
-        clear:Math.max(67,Math.min(104,85+10*paceWave-5*fatigue+rf(-7,7))),
-        liveTarget:Math.max(4,Math.min(cfg.cap-2,Math.round(9+(cfg.cap-13)*progress+5*pressureWave+rf(-2,2)))),
-        highPct:Math.max(0, Math.min(state.mode==="defense"?8:25, baseHigh)),
-        burst:Math.max(0,Math.min(.22,.055+.065*Math.max(0,pressureWave)+rf(-.025,.035))),
+        pressure:pressure,
+        durationFactor:Math.max(.86,Math.min(1.16,1+0.075*paceWave-pressureWave*.045+rf(-.025,.025))),
+        clear:Math.max(67,Math.min(104,85+8*paceWave-4*fatigue+pressureWave*7+rf(-3,3))),
+        liveTarget:Math.max(4,Math.min(cfg.cap-2,Math.round(9+(cfg.cap-13)*progress+5*pressureWave+rf(-1.5,1.5)))),
+        highPct:Math.max(0,Math.min(cfg.highPctCap,baseHigh)),
+        burst:Math.max(0,Math.min(.22,.055+.055*Math.max(0,pressureWave)+rf(-.018,.022))),
         pauseSpike:(i>0&&rnd()<.18),
       });
     }
@@ -811,17 +931,13 @@ function buildLog(inp,prog){
     // 高压分簇时间表（每轮独立，按目标占比将高压事件聚类，避免随机抖动被平均）
     for(i=0;i<N;i++){
       var pct=roundProfile[i].highPct;
-      if(state.mode==="defense"){ roundProfile[i].lowLive=9+rf(-1,1); roundProfile[i].highLive=16; }
-      else if(state.mode==="interception"){ roundProfile[i].lowLive=10+rf(-1.5,1.5); roundProfile[i].highLive=24+rf(-1,2); }
-      else { roundProfile[i].lowLive=16+rf(-1.5,1.5); roundProfile[i].highLive=33+rf(-1,1.5); }
+      roundProfile[i].lowLive=rf(cfg.lowLive[0],cfg.lowLive[1]);
+      roundProfile[i].highLive=rf(cfg.highLive[0],cfg.highLive[1]);
       var v=perValid[i];
       var highEvents=Math.round(v*pct/100*1.25);
       highEvents=Math.min(v, Math.max(0, highEvents));
       var arr=new Array(v); for(var k2=0;k2<v;k2++) arr[k2]=false;
-      var bMin,bMax;
-      if(state.mode==="defense"){ bMin=3; bMax=7; }
-      else if(state.mode==="interception"){ bMin=4; bMax=9; }
-      else { bMin=5; bMax=10; }
+      var bMin=cfg.burstSize[0],bMax=cfg.burstSize[1];
       var remain=highEvents;
       var attempts=0;
       while(remain>0 && attempts<300){
@@ -847,10 +963,10 @@ function buildLog(inp,prog){
     /* 标准 9 轮直接采用实测序列（29 行），保证波次口径一致 */
     var lwPlan=(function(){if(state.mode==="mirror"&&N===9)return [[1,2],[3,1,2],[3,4],[5,1,2],[3,1,2],[3,1,2],[1,2],[3,1,2],[3,1,1,1,1,1,1,2]];
       var arr=[],w=0;for(var r2=0;r2<N;r2++){var cnt=(r2===N-1)?4:3,nums=[];for(var k=0;k<cnt;k++){if(w<1||w>=5||rnd()<0.4)w=1;else w++;nums.push(w);}arr.push(nums);}return arr;})();
-    if(N>1&&V>20&&state.mode!=="interception"){var gr=ri(1,N-1),cb=0;for(var gi=0;gi<gr;gi++)cb+=perValid[gi];gapSpec={gapAt:cb+Math.floor(perValid[gr]*rf(0.3,0.7)),done:false};}
+    if(N>1&&V>20&&(state.mode==="defense"||state.mode==="mirror")){var gr=ri(1,N-1),cb=0;for(var gi=0;gi<gr;gi++)cb+=perValid[gi];gapSpec={gapAt:cb+Math.floor(perValid[gr]*rf(0.3,0.7)),done:false};}
 
-    var _liveCap=state.mode==="defense"?29:state.mode==="interception"?32:34;
-    var live=state.mode==="mirror"?ri(14,18):state.mode==="interception"?ri(10,14):ri(8,12),transTimes=[],droneIdx=0;
+    var _liveCap=cfg.liveCap;
+    var live=ri(cfg.initialLive[0],cfg.initialLive[1]),transTimes=[],droneIdx=0;
     var lvl=60;
     var step=0;
     var nextId=4;
@@ -870,17 +986,17 @@ function buildLog(inp,prog){
         if(idx>=0 && idx < prof.highMap.length) isHigh=!!prof.highMap[idx];
       }
       var liveTarget=isHigh ? prof.highLive : prof.lowLive;
-      live=Math.max(2,Math.min(_liveCap,live+Math.max(-3,Math.min(3,Math.round((liveTarget-live)*0.62)))+ri(-2,2)));
+      live=Math.max(2,Math.min(_liveCap,live+Math.max(-3,Math.min(3,Math.round((liveTarget-live)*0.5)))+ri(-1,1)));
       var mon;
       if(isHigh){
-        var rHigh=state.mode==="defense"?rf(0.88,0.98):state.mode==="interception"?rf(0.88,0.97):rf(0.92,0.99);
+        var rHigh=rf(cfg.monitorHigh[0],cfg.monitorHigh[1]);
         mon=Math.max(0,Math.min(live,Math.round(live*rHigh)));
-        var thr=state.mode==="defense"?12:state.mode==="interception"?16:28;
+        var thr=cfg.monitorThreshold;
         if(mon <= thr) mon=Math.min(live, thr+1+ri(0,2));
       } else {
-        var rLow=state.mode==="defense"?rf(0.15,0.35):state.mode==="interception"?rf(0.32,0.52):rf(0.52,0.68);
+        var rLow=rf(cfg.monitorLow[0],cfg.monitorLow[1]);
         mon=Math.max(0,Math.min(live,Math.round(live*rLow)));
-        if(isDrone) mon=Math.max(0,Math.min(live,Math.round(live*(state.mode==="defense"?rf(0.12,0.35):rf(0.35,0.60)))));
+        if(isDrone) mon=Math.max(0,Math.min(live,Math.round(live*rf(cfg.droneMonitor[0],cfg.droneMonitor[1]))));
       }
       var paused=(state.mode==="interception"&&t-t0<8)?4:0;
       var ally=ri(3,8);
@@ -953,11 +1069,30 @@ function buildLog(inp,prog){
       var fr=rnd(),md=state.mode;
       if(md==="defense"){if(fr<0.20)damageDrizzle(1);else if(fr<0.222)trackerLine();else if(fr<0.228)natLine();}
       else if(md==="interception"){if(fr<0.026)trackerLine();else if(fr<0.037)wispCycle();else if(fr<0.048)moveBurst();else if(fr<0.053)natLine();else if(fr<0.056)natServer();else if(fr<0.06)findWeapon();else if(fr<0.066)spotLoad(false);else if(fr<0.069)teleportFade();else if(fr<0.072)damageDrizzle(1);else if(fr<0.09)opCycle();else if(fr<0.093)transferPair(false);else if(fr<0.0935){L(out,t,"Net [Warning]: No action!");t+=0.01;}}
-      else{if(fr<0.026)trackerLine();else if(fr<0.037)wispCycle();else if(fr<0.05)physSweep();else if(fr<0.054)natLine();else if(fr<0.057)natServer();else if(fr<0.065)transferPair(false);else if(fr<0.088)opCycle();else if(fr<0.093)moveBurst();else if(fr<0.096)bridges();}
+      else if(md==="mirror"){if(fr<0.026)trackerLine();else if(fr<0.037)wispCycle();else if(fr<0.05)physSweep();else if(fr<0.054)natLine();else if(fr<0.057)natServer();else if(fr<0.065)transferPair(false);else if(fr<0.088)opCycle();else if(fr<0.093)moveBurst();else if(fr<0.096)bridges();}
+      else if(md==="recovery"){if(fr<0.025)trackerLine();else if(fr<0.04)spotLoad(false);else if(fr<0.055)teleportFade();else if(fr<0.07)damageDrizzle(1);else if(fr<0.08)natLine();}
+      else if(md==="disruption"){if(fr<0.024)trackerLine();else if(fr<0.04)natLine();else if(fr<0.055)damageDrizzle(1);else if(fr<0.07)opCycle();else if(fr<0.082)netStats();}
+      else{if(fr<0.03)trackerLine();else if(fr<0.05)wispCycle();else if(fr<0.065)natLine();else if(fr<0.08)damageDrizzle(1);else if(fr<0.09)netStats();}
     }
     /* 中段轮结算（终局轮走 finalBlock，不经过这里） */
     function continueBlock(){
       var base2=t;
+      /* 资源回收、中断和生存在样本里推进的是各自任务状态/奖励事件，不弹出旧模式的队伍继续对话。 */
+      if(state.mode==="recovery"){
+        L(out,base2,"Script [Info]: PurifyMission.lua: ModeState");
+        L(out,base2+0.02,"Script [Info]: PurifyMission.lua: ObjectiveText");
+        transTimes.push(base2+0.02);t=base2+rf(.4,1.2);return;
+      }
+      if(state.mode==="disruption"){
+        L(out,base2,"Script [Info]: SentientArtifactMission.lua: ModeState");
+        L(out,base2+0.02,"Script [Info]: SentientArtifactMission.lua: Disruption");
+        transTimes.push(base2+0.02);t=base2+rf(.4,1.2);return;
+      }
+      if(state.mode==="survival"){
+        L(out,base2,"Sys [Info]: Created /Lotus/Interface/SurvivalReward.swf");
+        L(out,base2+0.02,"Script [Info]: SurvivalReward.lua: RewardUtilities");
+        transTimes.push(base2+0.02);t=base2+rf(.4,1.2);return;
+      }
       if(state.mode==="mirror"){
         L(out,base2,"Game [Info]: Received request to open continue mission screen.");base2+=0.05;
         L(out,base2,"Script [Info]: LoopDefend.lua: waiting for continue...");base2+=0.05;
@@ -1028,17 +1163,27 @@ function buildLog(inp,prog){
         missing19();createdEOM();
         L(out,t,"Script [Info]: DefenseReward.lua: DefenseReward::TransitionOut");transTimes.push(t);t+=0.01;
         L(out,t,"Script [Info]: HudRedux.lua: DBG: HudVis 4");t+=rf(1.5,2.5);
-      }else{
+      }else if(state.mode==="interception"){
         cancelDlg("int");
         commitPrelude(true);
         missing19();createdEOM();
         L(out,t,"Script [Info]: DefenseReward.lua: DefenseReward::TransitionOut");transTimes.push(t);t+=0.01;
         L(out,t,"Script [Info]: HudRedux.lua: DBG: HudVis 4");t+=rf(1.5,2.5);
+      }else{
+        eomBurst(true);
+        cancelDlg("int");
+        commitPrelude(true);
+        missing19();createdEOM();
+        if(state.mode==="recovery")L(out,t,"Script [Info]: PurifyMission.lua: ModeState");
+        else if(state.mode==="disruption")L(out,t,"Script [Info]: SentientArtifactMission.lua: ModeState");
+        else L(out,t,"Script [Info]: SurvivalReward.lua: RewardUtilities");
+        transTimes.push(t);t+=0.01;
+        L(out,t,"Script [Info]: HudRedux.lua: DBG: HudVis 4");t+=rf(1.5,2.5);
       }
     }
     /* 终局成功播报（trans 之后，收尾段 emit） */
     function successFlow(){
-      if(state.mode==="defense")return; /* 防御终局无成功播报行 */
+      if(state.mode==="defense"||state.mode==="recovery"||state.mode==="disruption"||state.mode==="survival")return;
       var path=state.mode==="mirror"?"/Lotus/Sounds/Lotus/VersionB/MissionCompleteDefendTrans":"/Lotus/Sounds/Dialog/GenericMissions/InterceptionMissionSuccess/MissionCompleteTerritoryTrans";
       var tot=state.mode==="mirror"?75:74, ok=71;
       L(out,t,"Script [Info]: ProjectionsCountdown.lua: Relic timer closed");t+=0.01;
@@ -1153,7 +1298,7 @@ function buildLog(inp,prog){
                   L(out,t,"Script [Info]: WaveDefend.lua: Spawned a /Npc/"+pr2[1]+agentIdx+" @ Vector("+rf(-35,85).toFixed(4)+", "+rf(48,70).toFixed(4)+", "+rf(10,125).toFixed(4)+"), spawn point: /Layer1/Layer2/NpcSpawnPoint"+ri(2,165)+" @ Vector("+rf(-35,85).toFixed(4)+", "+rf(48,70).toFixed(4)+", "+rf(10,125).toFixed(4)+"), total spawned in current wave: "+waveEnemyNo);t+=0.01;
                 }
                 agentLine(droneSlot);step++;
-                t=advance(t,isBurst()?rf(0.08,0.25):(wDur/Math.max(1,cnt)*rf(0.7,1.3)));
+                t=advanceCurve(t,isBurst()?rf(0.08,0.25):(wDur/Math.max(1,cnt)),state.mode,step/Math.max(1,V-1),dPhase);
                 if(rnd()<0.06)retransmit(),t+=0.05;
                 if(rnd()<0.15)netStats();
               }
@@ -1192,7 +1337,7 @@ function buildLog(inp,prog){
               var stepT=Math.max(0.05,(segBudget-1.5)/Math.max(1,perSeg));
               for(var q=0;q<perSeg&&emitted<vCount&&step<V;q++){
                 agentLine(!!dIdx[step-base]);step++;emitted++;
-                t=advance(t,isBurst()?rf(0.08,0.25):(stepT*rf(0.6,1.4)));
+                t=advanceCurve(t,isBurst()?rf(0.08,0.25):stepT,state.mode,step/Math.max(1,V-1),dPhase);
               }
               if(rnd()<0.5){netStats();}
               if(rnd()<0.3){survivalReward();survivalReward();}
@@ -1228,6 +1373,57 @@ function buildLog(inp,prog){
             L(out,t,"Script [Info]: Transmission.lua: Updated pulled nextQueued: /Lotus/Sounds/Dialog/GenericMissions/InterceptionNewRound/InterNewRoundLotusTransmission");t+=0.15;
             if(isLast){finalBlock();}else{continueBlock();}
             t+=rf(2,5);
+          }else if(state.mode==="recovery"){
+            var purifyPhases=5,purifyEmitted=0;
+            for(var pp=0;pp<purifyPhases;pp++){
+              L(out,t,"Script [Info]: PurifyMission.lua: ModeState");t+=rf(.4,1.2);
+              if(pp===0||pp===purifyPhases-1||rnd()<.55){L(out,t,"Script [Info]: PurifyMission.lua: ObjectiveText");t+=.02;}
+              if(pp===1||pp===3){
+                var purifyAsset=pp===1?"/Lotus/Types/Gameplay/Purify/InfestedConsole":"/Lotus/Types/Gameplay/Purify/PurifierAction";
+                L(out,t,"Sys [Info]: Spot-loading "+purifyAsset);t+=.03;
+              }
+              var purifyCount=Math.ceil((vCount-purifyEmitted)/(purifyPhases-pp));
+              for(var pe=0;pe<purifyCount&&purifyEmitted<vCount&&step<V;pe++){
+                agentLine(!!dIdx[step-base]);step++;purifyEmitted++;
+                var purifyPhase=(r+(pp+(pe+1)/Math.max(1,purifyCount))/purifyPhases)/N;
+                t=advanceCurve(t,roundT/Math.max(1,vCount),state.mode,purifyPhase,dPhase);
+                if(rnd()<.08)netStats();
+              }
+              t+=rf(1.5,4.5);
+            }
+            if(isLast){finalBlock();}else{continueBlock();t+=rf(1,3);}
+          }else if(state.mode==="disruption"){
+            var conduits=4,disruptionEmitted=0;
+            for(var ci=0;ci<conduits;ci++){
+              L(out,t,"Script [Info]: SentientArtifactMission.lua: ModeState");t+=.02;
+              L(out,t,"Script [Info]: SentientArtifactMission.lua: Disruption");t+=.04;
+              L(out,t,"Script [Info]: SentientArtifactMission.lua: ObjectiveText");t+=.02;
+              var conduitCount=Math.ceil((vCount-disruptionEmitted)/(conduits-ci));
+              for(var ce=0;ce<conduitCount&&disruptionEmitted<vCount&&step<V;ce++){
+                agentLine(!!dIdx[step-base]);step++;disruptionEmitted++;
+                var conduitPhase=(r+(ci+(ce+1)/Math.max(1,conduitCount))/conduits)/N;
+                t=advanceCurve(t,roundT/Math.max(1,vCount),state.mode,conduitPhase,dPhase);
+                if(rnd()<.07)netStats();
+              }
+              if(ci===1||ci===3)t+=rf(2,6);
+            }
+            if(isLast){finalBlock();}else{continueBlock();t+=rf(1,3);}
+          }else if(state.mode==="survival"){
+            var supportPulses=4,survivalEmitted=0;
+            for(var sp=0;sp<supportPulses;sp++){
+              L(out,t,"Script [Info]: SurvivalMission.lua: ModeState");t+=.02;
+              L(out,t,"Script [Info]: SurvivalMission.lua: Survival");t+=.03;
+              var lifePath=sp===0?"/Lotus/Sounds/Dialog/GenericMissions/SurvivalLifeSupportIncoming/SurvivalLifeSupportIncomingTransmission":sp%2?"/Lotus/Sounds/Dialog/GenericMissions/SurvivalLifeSupportActivated/SurvivalLifeSupportActivatedTransmission":"/Lotus/Sounds/Dialog/GenericMissions/SurvivalLifeSupportCut/SurvivalInfestedLifeSupportCutTransmission";
+              L(out,t,"Script [Info]: HudRedux.lua: Queued a transmission from Hud: "+lifePath);t+=.02;transmissionPair();
+              var supportCount=Math.ceil((vCount-survivalEmitted)/(supportPulses-sp));
+              for(var se=0;se<supportCount&&survivalEmitted<vCount&&step<V;se++){
+                agentLine(!!dIdx[step-base]);step++;survivalEmitted++;
+                var supportPhase=(r+(sp+(se+1)/Math.max(1,supportCount))/supportPulses)/N;
+                t=advanceCurve(t,roundT/Math.max(1,vCount),state.mode,supportPhase,dPhase);
+                if(rnd()<.06)netStats();
+              }
+            }
+            if(isLast){finalBlock();}else{continueBlock();t+=rf(1,3);}
           }else{
             /* 镜像防御：按任务级环波计划推进（编号游走，波次按递增段计数） */
             var waves=lwPlan[r];
@@ -1245,7 +1441,7 @@ function buildLog(inp,prog){
               var cnt2=Math.ceil((vCount-emitted)/(waves.length-lwi));
               for(var e2=0;e2<cnt2&&emitted<vCount&&step<V;e2++){
                 agentLine(!!dIdx[step-base]);step++;emitted++;
-                t=advance(t,isBurst()?rf(0.08,0.25):(roundT/vCount*rf(0.6,1.4)));
+                t=advanceCurve(t,isBurst()?rf(0.08,0.25):(roundT/vCount),state.mode,step/Math.max(1,V-1),dPhase);
                 if(rnd()<0.12){netStats();t+=0.05;}
               }
               for(var bi2=0;bi2<5;bi2++)eomBurst(true);
@@ -1334,11 +1530,12 @@ function selectMode(el){
     document.querySelectorAll(".mode").forEach(function(x){x.classList.remove("on");x.setAttribute("aria-checked","false");x.tabIndex=-1;});
     el.classList.add("on");el.setAttribute("aria-checked","true");el.tabIndex=0;state.mode=el.dataset.m;
     var cfg=MODE_CFG[state.mode];
-    if(state.mode==="defense"){$("roundLabel").textContent="波数（标准 81 波）";$("roundhint").textContent="防御按波输入：81 波 = 27 轮，上限 90 波";$("rounds").value=81;}
-    else if(state.mode==="mirror"){$("roundLabel").textContent="轮数（循环段）";$("roundhint").textContent="镜像防御：1 轮 ≈ 3~4 个环波，上限 12 轮，标准 9 轮（约75分钟）";$("rounds").value=9;}
-    else{$("roundLabel").textContent="轮数（争夺轮）";$("roundhint").textContent="拦截：1 轮 ≈ 1 次完整争夺，上限 12 轮，标准 10 轮（约69分钟）";$("rounds").value=10;}
-    var cap=state.mode==="defense"?90:cfg.maxRounds;
-    if(parseInt($("rounds").value||"1",10)>cap)$("rounds").value=cap;
+    $("roundLabel").textContent=cfg.inputLabel;
+    var capHint=(state.mode==="recovery"||state.mode==="disruption"||state.mode==="survival")?"；标准节拍上限约 "+standardModeCapEPH(cfg).toLocaleString()+"/时":"";
+    $("roundhint").textContent=cfg.inputHint+capHint;
+    $("rounds").min=cfg.inputMode==="waves"?3:1;
+    $("rounds").max=cfg.maxInput;
+    $("rounds").value=cfg.standardInput;
     refreshNodes();
     if($("ess").value)doPreview();
     if(window.gsap&&!matchMedia("(prefers-reduced-motion: reduce)").matches)gsap.fromTo(el,{scale:.98},{scale:1,duration:.18,ease:"power2.out"});
@@ -1350,7 +1547,8 @@ document.querySelectorAll(".mode").forEach(function(el){
     if(event.key==="ArrowLeft"||event.key==="ArrowUp"||event.key==="ArrowRight"||event.key==="ArrowDown"){
       event.preventDefault();
       var modes=Array.prototype.slice.call(document.querySelectorAll(".mode"));
-      var step=(event.key==="ArrowLeft"||event.key==="ArrowUp")?-1:1;
+      var cols=window.innerWidth<=520?1:window.innerWidth<=880?2:3;
+      var step=event.key==="ArrowLeft"?-1:event.key==="ArrowRight"?1:event.key==="ArrowUp"?-cols:cols;
       var next=modes[(modes.indexOf(el)+step+modes.length)%modes.length];next.focus();selectMode(next);
     }
   });
@@ -1377,7 +1575,7 @@ $("btnGen").addEventListener("click",function(){
     $("progressText").textContent="日志已生成并开始下载。";
     var el=$("result");el.style.display="block";
     el.textContent="✓ 已生成 EE.log（"+r.lines.toLocaleString()+" 行）\n"
-      +"  "+(state.mode==="defense"?(inp.rounds*3+"波 / "+inp.rounds+"轮"):inp.rounds+"轮")
+      +"  "+runCountLabel(inp)
       +" · 实际时长 "+mmss(r.duration)+" · 无人机 "+r.drones+" · 敌人生成 "+r.enemyGenerated+" · 有效敌人 "+r.valid
       +" · 全BUFF "+r.eph.toFixed(1)+"/时（"+r.epm.toFixed(2)+"/分）"
       +" · 清场 "+r.clear.toFixed(1)+"%\n"
@@ -1397,6 +1595,7 @@ document.addEventListener("mousemove",function(e){
   }else tip.classList.remove("show");
 });
 
+drawModeCharts();
 refreshNodes();
 </script>
 </body>
